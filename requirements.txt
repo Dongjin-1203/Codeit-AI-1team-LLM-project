@@ -1,0 +1,10 @@
+# RAG 전처리 필수 라이브러리
+pandas>=2.0.0
+pypdf>=3.0.0
+olefile>=0.46
+tqdm>=4.65.0
+langchain>=0.1.0
+langchain-text-splitters>=0.0.1
+
+# 선택 (시각화)
+matplotlib>=3.7.0
