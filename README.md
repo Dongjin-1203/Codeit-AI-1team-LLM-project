@@ -31,7 +31,8 @@
 |프로젝트 총괄. 팀 회의 진행. 팀 혐업 환경 관리. RAG 개발|문서 청킹 전략 수립. 임베딩 준비. 학습 데이터 구성. 데이터 전처리 파이프라인 작성|API 모델 선정 및 성능 비교. 프롬프트 개발. 모델 개선|API 모델 선정 및 성능 비교. 프롬프트 개발. 모델 개선|
 ---
 # 5. 프로젝트 타임라인
-<img width="1305" height="556" alt="image" src="https://github.com/user-attachments/assets/cd40fc32-573a-42a4-a091-921b8b4998f8" />
+<img width="1695" height="671" alt="image" src="https://github.com/user-attachments/assets/252743cc-9ca6-429b-a086-d23b866b218c" />
+
 
 ---
 # 6. 서비스 설명
