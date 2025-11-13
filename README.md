@@ -12,6 +12,83 @@
 ---
 # 2. 설치 및 실행
 ---
+### Prerequisites
+- Python 3.12.3 설치됨
+- Poetry 설치됨
+- 저장소 클론 완료
+## 🪟 Windows
+
+```powershell
+# 1. 프로젝트 폴더로 이동
+cd Codeit-AI-1team-LLM-project
+
+# 2. 가상환경 설정 및 의존성 설치
+python -m poetry config virtualenvs.in-project true
+python -m poetry env use 3.12.3
+python -m poetry install
+
+# 3. 가상환경 활성화
+python -m poetry shell
+
+# 4. 실행
+python main.py
+```
+## 🍎 Mac / Linux
+
+```bash
+# 1. 프로젝트 폴더로 이동
+cd Codeit-AI-1team-LLM-project
+
+# 2. 가상환경 설정 및 의존성 설치
+poetry config virtualenvs.in-project true
+poetry env use 3.12.3
+poetry install
+
+# 3. 가상환경 활성화
+poetry shell
+
+# 4. 실행
+python main.py
+```
+## 📦 패키지 추가 시
+
+### Windows
+```powershell
+python -m poetry add 
+git add pyproject.toml poetry.lock
+git commit -m "Add package"
+git push
+```
+
+### Mac/Linux
+```bash
+poetry add 
+git add pyproject.toml poetry.lock
+git commit -m "Add package"
+git push
+```
+
+## 🔄 팀원이 패키지 추가했을 때
+
+### Windows
+```powershell
+git pull
+python -m poetry install
+```
+
+### Mac/Linux
+```bash
+git pull
+poetry install
+```
+## 🛠 자주 쓰는 명령어
+
+| 작업 | Windows | Mac/Linux |
+|------|---------|-----------|
+| 가상환경 활성화 | `python -m poetry shell` | `poetry shell` |
+| 가상환경 종료 | `exit` | `exit` |
+| 패키지 목록 | `python -m poetry show` | `poetry show` |
+
 # 3. 프로젝트 구조
 ---
 ```
