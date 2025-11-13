@@ -1,0 +1,24 @@
+[project]
+name = "codeit-ai-1team-llm-project"
+version = "0.1.0"
+description = "코드잇 중급 프로젝트 RAG 문서 요약 챗봇"
+authors = [
+    {name = "dong1203",email = "hambur1203@gmail.com"}
+]
+readme = "README.md"
+requires-python = "^3.12.3"
+dependencies = [
+    "langchain (>=1.0.5,<2.0.0)",
+    "langchain-core (>=1.0.4,<2.0.0)",
+    "langchain-text-splitters (>=1.0.0,<2.0.0)",
+    "langchain-openai (>=1.0.2,<2.0.0)",
+    "pypdf (>=6.2.0,<7.0.0)",
+    "pandas (>=2.3.3,<3.0.0)",
+    "tqdm (>=4.67.1,<5.0.0)",
+    "openai (>=2.7.2,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
