@@ -14,6 +14,29 @@
 ---
 # 3. 프로젝트 구조
 ---
+```
+CODEIT-AI-1TEAM-LLM-PROJECT/
+│
+├── main.py                  # 실행 진입점
+├── data/                    # 문서 및 벡터DB 저장 폴더
+├── src/
+│   ├── loader/              # 문서 로딩 및 전처리
+│   ├── embedding/           # 임베딩, 벡터DB 생성
+│   ├── retriever/           # 문서 검색기
+│   ├── generator/           # 응답 생성기
+│   ├── streamlit/           # UI 구성
+│   └── utils/               # 공통 함수 모듈
+└── README.md
+```
+- main.py: 전체 RAG 파이프라인 실행의 진입점입니다.
+- data/: 원문 문서, 생성된 벡터DB 등이 저장됩니다.
+- src/loader: PDF, HWP 문서를 텍스트로 추출하고 의미 단위로 분할합니다.
+- src/embedding: 텍스트 임베딩 벡터를 생성하고 Chroma DB를 구축합니다.
+- src/retriever: 사용자 질문에 대한 관련 문서를 벡터DB에서 검색합니다.
+- src/generator: 검색된 문서 기반으로 LLM이 응답을 생성합니다.
+- src/streamlit: Streamlit 기반 사용자 인터페이스를 구성합니다.
+- src/utils: 설정 확인, 경로 설정 등 공통 유틸리티 함수들을 포함합니다.
+
 # 4. 팀 소개
 > 기본에 충실실하며 실제 사용 가능한 모델을 만들기 위해 끊임없이 노력하는 팀입니다.
 
