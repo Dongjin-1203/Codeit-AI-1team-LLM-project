@@ -2,8 +2,8 @@ from openai import OpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from rag_config import RAGConfig
-from rag_retriever import RAGRetriever
+from src.utils.rag_config import RAGConfig
+from src.retriever.rag_retriever import RAGRetriever
 
 
 class RAGPipeline:
@@ -83,72 +83,77 @@ class RAGPipeline:
 
         return api_messages
 
-    def generate_answer(
-        self,
-        query: str,
-        temperature: float = None,
-        max_tokens: int = None
-    ):
-        """
-        질문에 대한 답변 생성
+    def _format_sources(self, retrieved_docs: list) -> list:
+        """검색된 문서를 sources 형식으로 변환"""
+        sources = []
         
-        Args:
-            query: 사용자 질문
-            temperature: LLM temperature (None이면 config 기본값)
-            max_tokens: 최대 토큰 수 (None이면 config 기본값)
+        for doc in retrieved_docs:
+            sources.append({
+                'content': doc['content'],
+                'metadata': doc['metadata'],
+                'score': doc['relevance_score'],
+                'filename': doc['filename'],
+                'organization': doc['organization']
+            })
+        
+        return sources
+
+    def generate_answer(
+        self, 
+        query: str, 
+        top_k: int = None,
+        temperature: float = None  # 받기는 하지만 사용하지 않음
+    ) -> dict:
+        """답변 생성"""
+        try:
+            k = top_k if top_k is not None else self.config.DEFAULT_TOP_K
             
-        Returns:
-            답변 및 메타데이터 딕셔너리
-        """
-        if temperature is None:
-            temperature = self.config.DEFAULT_TEMPERATURE
-        if max_tokens is None:
-            max_tokens = self.config.DEFAULT_MAX_TOKENS
-
-        # 1. 검색
-        retrieved_docs = self.retriever.search(query, top_k=self.top_k)
-
-        # 2. 프롬프트 구성
-        api_messages = self._build_prompt(query, retrieved_docs)
-
-        # 3. LLM 호출
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=api_messages,
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
-
-        # 답변 추출
-        answer = response.choices[0].message.content
-
-        # 4. 결과 구조화
-        result = {
-            'query': query,
-            'answer': answer,
-            'sources': [
-                {
-                    'filename': doc['filename'],
-                    'organization': doc['organization'],
-                    'relevance_score': doc['relevance_score'],
-                    'content_preview': doc['content'][:100] + "..."
+            # 1. 문서 검색
+            retrieved_docs = self.retriever.search(query, top_k=k)
+            
+            if not retrieved_docs:
+                return {
+                    'answer': "관련 문서를 찾을 수 없습니다.",
+                    'sources': [],
+                    'usage': {'total_tokens': 0, 'prompt_tokens': 0, 'completion_tokens': 0}
                 }
-                for doc in retrieved_docs
-            ],
-            'model': self.model,
-            'usage': {
-                'prompt_tokens': response.usage.prompt_tokens,
-                'completion_tokens': response.usage.completion_tokens,
-                'total_tokens': response.usage.total_tokens
+            
+            # 2. 프롬프트 생성
+            messages = self._build_prompt(query, retrieved_docs)
+            
+            # 3. OpenAI API 호출 (temperature 제외)
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                max_completion_tokens=self.config.DEFAULT_MAX_TOKENS
+            )
+            
+            # 4. 결과 반환
+            return {
+                'answer': response.choices[0].message.content,
+                'sources': self._format_sources(retrieved_docs),
+                'usage': {
+                    'total_tokens': response.usage.total_tokens,
+                    'prompt_tokens': response.usage.prompt_tokens,
+                    'completion_tokens': response.usage.completion_tokens
+                }
             }
-        }
-
-        return result
+        
+        except Exception as e:
+            print(f"❌ 답변 생성 오류: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            return {
+                'answer': f"답변 생성 중 오류가 발생했습니다: {str(e)}",
+                'sources': [],
+                'usage': {'total_tokens': 0, 'prompt_tokens': 0, 'completion_tokens': 0}
+            }
 
     def print_result(self, result: dict):
         """결과 출력"""
         print("\n" + "="*60)
-        print(f"질문: {result['query']}")
+        print(f"질문: {result.get('query', 'N/A')}")
         print("="*60)
 
         print(f"\n💬 답변:\n{result['answer']}")
@@ -157,10 +162,10 @@ class RAGPipeline:
         for i, source in enumerate(result['sources'], 1):
             print(f"  [{i}] {source['filename']}")
             print(f"      발주기관: {source['organization']}")
-            print(f"      관련도: {source['relevance_score']:.3f}")
+            print(f"      관련도: {source['score']:.3f}")
 
         print(f"\n📊 사용량:")
-        print(f"  모델: {result['model']}")
+        print(f"  모델: {self.model}")
         print(f"  토큰: {result['usage']['total_tokens']} "
               f"(입력: {result['usage']['prompt_tokens']}, "
               f"출력: {result['usage']['completion_tokens']})")

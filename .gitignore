@@ -215,5 +215,7 @@ poetry.lock
 
 # data
 data/files/
+data/
+data_list.csv
 rag_chunks_final.csv
 chroma_db/

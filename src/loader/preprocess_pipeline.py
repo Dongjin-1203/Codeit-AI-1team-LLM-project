@@ -431,17 +431,46 @@ class RAGPreprocessPipeline:
         print("3단계: 청킹")
         print("="*60)
         
-        # 추출 실패 문서 필터링
+        # [추가] 필터링 전 상태 확인
         original_count = len(df)
-        df = df[~df['text_content'].str.contains('\[추출 실패', na=False)]
-        df = df[~df['text_content'].str.contains('\[PDF 추출 실패', na=False)]
-        df = df[~df['text_content'].str.contains('\[HWP 추출 실패', na=False)]
+        print(f"🔍 필터링 전 문서 수: {original_count}")
+        
+        # 샘플 텍스트 미리보기
+        if len(df) > 0:
+            sample = df['text_content'].iloc[0]
+            print(f"🔍 첫 번째 문서 미리보기:")
+            print(f"   시작 부분: {sample[:100]}...")
+            print(f"   전체 길이: {len(sample)}자")
+            
+            # 추출 실패 패턴이 있는지 확인
+            has_failure = any([
+                '[추출 실패' in sample,
+                '[PDF 추출 실패' in sample,
+                '[HWP 추출 실패' in sample
+            ])
+            print(f"   추출 실패 포함?: {has_failure}")
+        
+        # 추출 실패 문서 필터링 (raw string 사용)
+        df = df[~df['text_content'].str.contains(r'\[추출 실패', na=False)]
+        df = df[~df['text_content'].str.contains(r'\[PDF 추출 실패', na=False)]
+        df = df[~df['text_content'].str.contains(r'\[HWP 추출 실패', na=False)]
         
         filtered_count = original_count - len(df)
+        
+        print(f"\n📊 필터링 결과:")
+        print(f"   제외된 문서: {filtered_count}개")
+        print(f"   남은 문서: {len(df)}개")
+        
+        if len(df) == 0:
+            print("\n❌ 경고: 모든 문서가 필터링되었습니다!")
+            print("   → 추출이 모두 실패했거나 필터링 조건이 너무 엄격합니다.")
+            return pd.DataFrame()
+        
         if filtered_count > 0:
             print(f"⚠️  추출 실패 문서 제외: {filtered_count}개")
             print(f"✅ 유효한 문서: {len(df)}개")
         
+        # 청킹 시작
         df_chunks = self.chunker.chunk_dataframe(df)
         self.stats['total_chunks'] = len(df_chunks)
         

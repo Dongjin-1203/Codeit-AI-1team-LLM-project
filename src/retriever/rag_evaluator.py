@@ -1,4 +1,4 @@
-from rag_pipeline import RAGPipeline
+from src.generator.rag_pipeline import RAGPipeline
 
 
 class RAGEvaluator:
