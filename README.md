@@ -1,5 +1,9 @@
 # Codeit-AI-1team-LLM-project
 ---
+## 챗봇 서비스 시연
+![VectorDB Dashboard](asset/ezgif.com-video-to-gif-converter.gif)
+
+## 벡터 DB 대시보드 영상
 ![VectorDB Dashboard](asset/DB1-ezgif.com-video-to-gif-converter.gif)
 
 # 1. 프로젝트 개요
