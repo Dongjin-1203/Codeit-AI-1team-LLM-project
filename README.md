@@ -15,13 +15,14 @@
 > 
 > **기대 효과**: RAG 시스템을 통해 중요한 정보를 신속하게 제공함으로써, 제안서 검토 시간을 단축하고 컨설팅 업무에 보다 집중할 수 있는 환경을 조성합니다.
 ---
-# 2. 설치 및 실행
+# 2. 설치 및 실행(🪟 Windows)
 ---
 ### Prerequisites
 - Python 3.12.3 설치됨
 - Poetry 설치됨
 - 저장소 클론 완료
-## 🪟 Windows
+- 데이터셋 로컬에 저장
+- .env 생성(api키 입력)
 
 ```powershell
 # 1. 프로젝트 폴더로 이동
@@ -33,66 +34,17 @@ python -m poetry env use 3.12.3
 python -m poetry install
 
 # 3. 가상환경 활성화
-python -m poetry shell
+python -m poetry env activate
 
-# 4. 실행
-python main.py
+# 4. 실행(전처리~벡터DB 구측)
+python -m poetry run python main.py --step all
+
+# 5. 벡터 DB 대시보드 실행
+python -m poetry run streamlit run src/visualization/streamlit_app.py
+
+# 6. 챗봇 서비스 실행
+python -m poetry run streamlit run src/visualization/chatbot_app.py
 ```
-## 🍎 Mac / Linux
-
-```bash
-# 1. 프로젝트 폴더로 이동
-cd Codeit-AI-1team-LLM-project
-
-# 2. 가상환경 설정 및 의존성 설치
-poetry config virtualenvs.in-project true
-poetry env use 3.12.3
-poetry install
-
-# 3. 가상환경 활성화
-poetry shell
-
-# 4. 실행
-python main.py
-```
-## 📦 패키지 추가 시
-
-### Windows
-```powershell
-python -m poetry add 
-git add pyproject.toml poetry.lock
-git commit -m "Add package"
-git push
-```
-
-### Mac/Linux
-```bash
-poetry add 
-git add pyproject.toml poetry.lock
-git commit -m "Add package"
-git push
-```
-
-## 🔄 팀원이 패키지 추가했을 때
-
-### Windows
-```powershell
-git pull
-python -m poetry install
-```
-
-### Mac/Linux
-```bash
-git pull
-poetry install
-```
-## 🛠 자주 쓰는 명령어
-
-| 작업 | Windows | Mac/Linux |
-|------|---------|-----------|
-| 가상환경 활성화 | `python -m poetry shell` | `poetry shell` |
-| 가상환경 종료 | `exit` | `exit` |
-| 패키지 목록 | `python -m poetry show` | `poetry show` |
 
 # 3. 프로젝트 구조
 ---
@@ -100,13 +52,15 @@ poetry install
 CODEIT-AI-1TEAM-LLM-PROJECT/
 │
 ├── main.py                  # 실행 진입점
-├── data/                    # 문서 및 벡터DB 저장 폴더
+├── data/                    # 문서 및 벡터DB 저장 폴더(비공개)
+│   ├── files/               # hwp, pdf 문서
+│   └── data_list.csv        # RFP 문서 정보 csv
 ├── src/
 │   ├── loader/              # 문서 로딩 및 전처리
 │   ├── embedding/           # 임베딩, 벡터DB 생성
 │   ├── retriever/           # 문서 검색기
 │   ├── generator/           # 응답 생성기
-│   ├── streamlit/           # UI 구성
+│   ├── visualization/           # UI 구성
 │   └── utils/               # 공통 함수 모듈
 └── README.md
 ```
@@ -116,7 +70,7 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 - `src/embedding`: 텍스트 임베딩 벡터를 생성하고 Chroma DB를 구축합니다.
 - `src/retriever`: 사용자 질문에 대한 관련 문서를 벡터DB에서 검색합니다.
 - `src/generator`: 검색된 문서 기반으로 LLM이 응답을 생성합니다.
-- `src/streamlit`: Streamlit 기반 사용자 인터페이스를 구성합니다.
+- `src/visualization`: Streamlit 기반 사용자 인터페이스를 구성합니다.
 - `src/utils`: 설정 확인, 경로 설정 등 공통 유틸리티 함수들을 포함합니다.
 
 # 4. 팀 소개
