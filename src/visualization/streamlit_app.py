@@ -3,12 +3,11 @@
 ChromaDB 데이터를 2D/3D로 시각화
 """
 import io
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
-from typing import Optional
 import sys
 from pathlib import Path
 
@@ -20,6 +19,60 @@ from src.visualization.vector_db_loader import VectorDBLoader
 from src.visualization.dimensionality_reduction import DimensionalityReducer
 from src.utils.rag_config import RAGConfig
 
+# ===== 자동 초기화 함수 =====
+@st.cache_resource
+def initialize_data():
+    """ChromaDB가 없으면 자동으로 전처리 + 임베딩 실행"""
+    
+    config = RAGConfig()
+    
+    # ChromaDB가 이미 존재하는지 확인
+    if os.path.exists(config.DB_DIRECTORY):
+        try:
+            # ChromaDB 연결 테스트
+            loader = VectorDBLoader(config)
+            info = loader.get_collection_info()
+            if info['total_documents'] > 0:
+                st.success(f"✅ 기존 ChromaDB 로드 완료 ({info['total_documents']}개 문서)")
+                return True
+        except:
+            st.warning("⚠️ 기존 ChromaDB가 손상되었습니다. 재생성합니다.")
+    
+    # ChromaDB가 없으면 생성
+    st.info("🔄 ChromaDB를 생성합니다. 최초 1회만 실행되며 약 2-3분 소요됩니다...")
+    
+    try:
+        # 전처리 실행
+        with st.spinner("1/2 전처리 실행 중..."):
+            from src.loader.preprocess_pipeline import RAGPreprocessPipeline
+            from src.utils.preprocess_config import PreprocessConfig
+            
+            preprocess_config = PreprocessConfig()
+            pipeline = RAGPreprocessPipeline(preprocess_config)
+            df_chunks = pipeline.run()
+            st.success(f"✅ 전처리 완료: {len(df_chunks)}개 청크")
+        
+        # 임베딩 실행
+        with st.spinner("2/2 임베딩 실행 중..."):
+            from src.embedding.rag_data_processing import RAGVectorDBPipeline
+            
+            rag_pipeline = RAGVectorDBPipeline(config)
+            rag_pipeline.build()
+            st.success("✅ ChromaDB 생성 완료!")
+        
+        return True
+        
+    except Exception as e:
+        st.error(f"❌ 초기화 실패: {e}")
+        st.info("""
+        ### 💡 수동 실행이 필요합니다
+        
+        로컬 환경에서:
+```bash
+        python main.py --step all
+```
+        """)
+        return False
 
 # ===== 페이지 설정 =====
 st.set_page_config(
@@ -90,10 +143,19 @@ def reduce_dimensions(embeddings, method, n_components):
 
 # ===== 메인 앱 =====
 def main():
+    st.set_page_config(
+        page_title="벡터DB 시각화",
+        page_icon="🔍",
+        layout="wide"
+    )
     # 헤더
     st.markdown('<div class="main-header">🔍 벡터DB 시각화</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">ChromaDB 임베딩 공간 탐색</div>', unsafe_allow_html=True)
     
+    # 자동 초기화
+    if not initialize_data():
+        return
+
     # 데이터 로드
     with st.spinner("데이터 로드 중..."):
         try:
