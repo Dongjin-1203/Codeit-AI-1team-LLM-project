@@ -1,5 +1,6 @@
 # Codeit-AI-1team-LLM-project
 ---
+![VectorDB Dashboard](asset/DB1-ezgif.com-video-to-gif-converter.gif)
 
 # 1. 프로젝트 개요
 - **B2G 입찰지원 전문 컨설팅 스타트업 – 'RFPilot'**
