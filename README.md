@@ -1,10 +1,10 @@
 # Codeit-AI-1team-LLM-project
 ---
 ## 챗봇 서비스 시연
-![VectorDB Dashboard](asset/ezgif.com-video-to-gif-converter.gif)
+![VectorDB Dashboard](asset/chatbot.gif)
 
 ## 벡터 DB 대시보드 영상
-![VectorDB Dashboard](asset/DB1-ezgif.com-video-to-gif-converter.gif)
+![VectorDB Dashboard](asset/vectorDB.gif)
 
 # 1. 프로젝트 개요
 - **B2G 입찰지원 전문 컨설팅 스타트업 – 'RFPilot'**
