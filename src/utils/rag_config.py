@@ -45,10 +45,20 @@ class RAGConfig:
 
     def _get_api_key(self) -> str:
         """환경에 따라 API 키 자동 선택"""
-        try:
-            return os.getenv("OPENAI_API_KEY")  # Local
-        except:
-            return print("OPENAI_API_KEY not found in environment variables.")
+        from dotenv import load_dotenv
+        
+        # .env 파일 로드
+        load_dotenv()
+        
+        api_key = os.getenv("OPENAI_API_KEY")
+        
+        if not api_key:
+            raise ValueError(
+                "OPENAI_API_KEY가 설정되지 않았습니다.\n"
+                "프로젝트 루트에 .env 파일을 만들고 OPENAI_API_KEY=your-key 를 추가하세요."
+            )
+        
+        return api_key
 
     def validate(self):
         """설정 유효성 검사"""

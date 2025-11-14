@@ -5,7 +5,7 @@ import os
 from tqdm import tqdm
 import time
 
-from rag_config import RAGConfig
+from src.utils.rag_config import RAGConfig
 
 
 class DataValidator:

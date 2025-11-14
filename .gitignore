@@ -215,3 +215,6 @@ poetry.lock
 
 # data
 data/files/
+data/
+.csv
+chroma_db/

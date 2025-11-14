@@ -6,7 +6,7 @@ RAG 전처리 실행 스크립트
 """
 
 import argparse
-from preprocess_config import PreprocessConfig
+from src.utils.preprocess_config import PreprocessConfig
 from preprocess_pipeline import RAGPreprocessPipeline
 
 

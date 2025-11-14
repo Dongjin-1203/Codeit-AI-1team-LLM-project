@@ -13,9 +13,9 @@ import pandas as pd
 from tqdm import tqdm
 from pypdf import PdfReader
 import olefile
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from preprocess_config import PreprocessConfig
+from src.utils.preprocess_config import PreprocessConfig
 
 
 # ============================================================
@@ -430,6 +430,17 @@ class RAGPreprocessPipeline:
         print("\n" + "="*60)
         print("3단계: 청킹")
         print("="*60)
+        
+        # 추출 실패 문서 필터링
+        original_count = len(df)
+        df = df[~df['text_content'].str.contains('\[추출 실패', na=False)]
+        df = df[~df['text_content'].str.contains('\[PDF 추출 실패', na=False)]
+        df = df[~df['text_content'].str.contains('\[HWP 추출 실패', na=False)]
+        
+        filtered_count = original_count - len(df)
+        if filtered_count > 0:
+            print(f"⚠️  추출 실패 문서 제외: {filtered_count}개")
+            print(f"✅ 유효한 문서: {len(df)}개")
         
         df_chunks = self.chunker.chunk_dataframe(df)
         self.stats['total_chunks'] = len(df_chunks)
