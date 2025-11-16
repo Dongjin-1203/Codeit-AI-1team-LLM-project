@@ -1,0 +1,353 @@
+{
+  "metadata": {
+    "created_at": "2024-11-16",
+    "description": "공공기관 사업제안서 RAG 검색기 평가용",
+    "total_queries": 30,
+    "document_mapping": {
+      "doc_001": "한영대학_한영대학교 특성화 맞춤형 교육환경 구축.hwp",
+      "doc_002": "한국연구재단_2024년 대학산학협력활동 실태조사 시스템.hwp",
+      "doc_003": "한국생산기술연구원_EIP3.0 고압가스 안전관리 시스템.hwp",
+      "doc_004": "인천광역시_도시계획위원회 통합관리시스템.hwp",
+      "doc_005": "광주문화재단_광주문화예술통합플랫폼.hwp",
+      "doc_006": "나노종합기술원_스마트 팹 서비스.hwp"
+    },
+    "categories": ["예산", "일정", "기술", "기능", "조직", "비교", "특정기관"],
+    "difficulties": {
+      "easy": "12개 (40%)",
+      "medium": "12개 (40%)",
+      "hard": "6개 (20%)"
+    }
+  },
+  "test_cases": [
+    {
+      "id": 1,
+      "query": "한영대학교의 학사정보시스템 구축 예산은 얼마인가?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_001"],
+        "relevant_filenames": ["한영대학_한영대학교 특성화 맞춤형 교육환경 구축.hwp"],
+        "expected_keywords": ["예산", "130000000", "1억 3천만원", "한영대학교"]
+      },
+      "difficulty": "easy",
+      "category": "예산"
+    },
+    {
+      "id": 2,
+      "query": "한국연구재단 UICC 시스템 사업의 총 사업기간은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_002"],
+        "relevant_filenames": ["한국연구재단_2024년 대학산학협력활동 실태조사 시스템.hwp"],
+        "expected_keywords": ["사업기간", "210일", "계약일"]
+      },
+      "difficulty": "easy",
+      "category": "일정"
+    },
+    {
+      "id": 3,
+      "query": "고압가스 안전관리 시스템을 구축하는 기관은 어디인가?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_003"],
+        "relevant_filenames": ["한국생산기술연구원_EIP3.0 고압가스 안전관리 시스템.hwp"],
+        "expected_keywords": ["한국생산기술연구원", "EIP3.0", "고압가스"]
+      },
+      "difficulty": "easy",
+      "category": "특정기관"
+    },
+    {
+      "id": 4,
+      "query": "인천광역시 도시계획위원회 시스템의 예산은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_004"],
+        "relevant_filenames": ["인천광역시_도시계획위원회 통합관리시스템.hwp"],
+        "expected_keywords": ["150000000", "1억 5천만원", "예산"]
+      },
+      "difficulty": "easy",
+      "category": "예산"
+    },
+    {
+      "id": 5,
+      "query": "광주문화예술통합플랫폼의 이름은 무엇인가?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_005"],
+        "relevant_filenames": ["광주문화재단_광주문화예술통합플랫폼.hwp"],
+        "expected_keywords": ["디어마이광주", "Dear My Gwangju", "dmgj.kr"]
+      },
+      "difficulty": "easy",
+      "category": "기능"
+    },
+    {
+      "id": 6,
+      "query": "나노종합기술원 사업의 용역 예산은 얼마인가?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_006"],
+        "relevant_filenames": ["나노종합기술원_스마트 팹 서비스.hwp"],
+        "expected_keywords": ["2349130320", "23억", "VAT포함"]
+      },
+      "difficulty": "easy",
+      "category": "예산"
+    },
+    {
+      "id": 7,
+      "query": "한영대학교 사업의 구축 기간은 몇 개월인가?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_001"],
+        "relevant_filenames": ["한영대학_한영대학교 특성화 맞춤형 교육환경 구축.hwp"],
+        "expected_keywords": ["3개월", "안정화기간", "1개월"]
+      },
+      "difficulty": "easy",
+      "category": "일정"
+    },
+    {
+      "id": 8,
+      "query": "트랙제도 교육과정을 도입하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_001"],
+        "relevant_filenames": ["한영대학_한영대학교 특성화 맞춤형 교육환경 구축.hwp"],
+        "expected_keywords": ["트랙제도", "한영대학교", "교육과정"]
+      },
+      "difficulty": "easy",
+      "category": "기능"
+    },
+    {
+      "id": 9,
+      "query": "대학정보공시와 연계하는 시스템은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_002"],
+        "relevant_filenames": ["한국연구재단_2024년 대학산학협력활동 실태조사 시스템.hwp"],
+        "expected_keywords": ["대학정보공시", "UICC", "연계"]
+      },
+      "difficulty": "easy",
+      "category": "기능"
+    },
+    {
+      "id": 10,
+      "query": "화학물질 관리와 관련된 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_003"],
+        "relevant_filenames": ["한국생산기술연구원_EIP3.0 고압가스 안전관리 시스템.hwp"],
+        "expected_keywords": ["화학물질", "고압가스", "안전관리"]
+      },
+      "difficulty": "easy",
+      "category": "기능"
+    },
+    {
+      "id": 11,
+      "query": "도시계획위원회와 건축공동위원회를 통합하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_004"],
+        "relevant_filenames": ["인천광역시_도시계획위원회 통합관리시스템.hwp"],
+        "expected_keywords": ["도시계획위원회", "건축공동위원회", "통합"]
+      },
+      "difficulty": "easy",
+      "category": "기능"
+    },
+    {
+      "id": 12,
+      "query": "API 방식으로 크롤링을 전환하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_005"],
+        "relevant_filenames": ["광주문화재단_광주문화예술통합플랫폼.hwp"],
+        "expected_keywords": ["API", "크롤링", "전환"]
+      },
+      "difficulty": "easy",
+      "category": "기술"
+    },
+    {
+      "id": 13,
+      "query": "오라클 데이터베이스를 사용하는 사업들은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_006"],
+        "relevant_filenames": ["나노종합기술원_스마트 팹 서비스.hwp"],
+        "expected_keywords": ["Oracle", "19c", "DataBase"]
+      },
+      "difficulty": "medium",
+      "category": "기술"
+    },
+    {
+      "id": 14,
+      "query": "클라우드 서버 운영을 포함하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_002", "doc_005"],
+        "relevant_filenames": ["한국연구재단_2024년 대학산학협력활동 실태조사 시스템.hwp", "광주문화재단_광주문화예술통합플랫폼.hwp"],
+        "expected_keywords": ["클라우드", "서버", "운영"]
+      },
+      "difficulty": "medium",
+      "category": "기술"
+    },
+    {
+      "id": 15,
+      "query": "TFT(Task Force Team) 운영을 계획하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_006"],
+        "relevant_filenames": ["나노종합기술원_스마트 팹 서비스.hwp"],
+        "expected_keywords": ["TFT", "Task Force", "정보화"]
+      },
+      "difficulty": "medium",
+      "category": "조직"
+    },
+    {
+      "id": 16,
+      "query": "실태조사 데이터 검증과 관련된 사업의 주요 내용은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_002"],
+        "relevant_filenames": ["한국연구재단_2024년 대학산학협력활동 실태조사 시스템.hwp"],
+        "expected_keywords": ["실태조사", "데이터", "검증", "보정"]
+      },
+      "difficulty": "medium",
+      "category": "기능"
+    },
+    {
+      "id": 17,
+      "query": "연구실 안전과 법적 준수를 목표로 하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_003"],
+        "relevant_filenames": ["한국생산기술연구원_EIP3.0 고압가스 안전관리 시스템.hwp"],
+        "expected_keywords": ["연구실", "안전", "법적", "준수"]
+      },
+      "difficulty": "medium",
+      "category": "기능"
+    },
+    {
+      "id": 18,
+      "query": "위원회 업무의 체계적 관리를 위한 시스템은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_004"],
+        "relevant_filenames": ["인천광역시_도시계획위원회 통합관리시스템.hwp"],
+        "expected_keywords": ["위원회", "체계적", "관리", "통합"]
+      },
+      "difficulty": "medium",
+      "category": "기능"
+    },
+    {
+      "id": 19,
+      "query": "문화예술 커뮤니티 활성화를 목표로 하는 플랫폼은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_005"],
+        "relevant_filenames": ["광주문화재단_광주문화예술통합플랫폼.hwp"],
+        "expected_keywords": ["문화예술", "커뮤니티", "활성화", "플랫폼"]
+      },
+      "difficulty": "medium",
+      "category": "기능"
+    },
+    {
+      "id": 20,
+      "query": "SECS 통신을 활용하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_006"],
+        "relevant_filenames": ["나노종합기술원_스마트 팹 서비스.hwp"],
+        "expected_keywords": ["SECS", "통신", "데이터", "수집"]
+      },
+      "difficulty": "medium",
+      "category": "기술"
+    },
+    {
+      "id": 21,
+      "query": "학사 관리와 관련된 시스템 구축 사업의 기대효과는?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_001"],
+        "relevant_filenames": ["한영대학_한영대학교 특성화 맞춤형 교육환경 구축.hwp"],
+        "expected_keywords": ["교육과정", "운영", "관리", "체계"]
+      },
+      "difficulty": "medium",
+      "category": "기능"
+    },
+    {
+      "id": 22,
+      "query": "메일 전송 기능 개선을 포함하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_002"],
+        "relevant_filenames": ["한국연구재단_2024년 대학산학협력활동 실태조사 시스템.hwp"],
+        "expected_keywords": ["메일", "전송", "기능", "개선"]
+      },
+      "difficulty": "medium",
+      "category": "기능"
+    },
+    {
+      "id": 23,
+      "query": "법적 요구사항 대응을 배경으로 하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_003"],
+        "relevant_filenames": ["한국생산기술연구원_EIP3.0 고압가스 안전관리 시스템.hwp"],
+        "expected_keywords": ["법적", "요구사항", "안전사고"]
+      },
+      "difficulty": "medium",
+      "category": "기능"
+    },
+    {
+      "id": 24,
+      "query": "내부시스템 연계를 포함하는 사업은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_004"],
+        "relevant_filenames": ["인천광역시_도시계획위원회 통합관리시스템.hwp"],
+        "expected_keywords": ["내부시스템", "연계", "통합"]
+      },
+      "difficulty": "medium",
+      "category": "기술"
+    },
+    {
+      "id": 25,
+      "query": "예산이 가장 높은 상위 3개 사업은 무엇인가?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_006", "doc_004", "doc_001"],
+        "relevant_filenames": ["나노종합기술원_스마트 팹 서비스.hwp", "인천광역시_도시계획위원회 통합관리시스템.hwp", "한영대학_한영대학교 특성화 맞춤형 교육환경 구축.hwp"],
+        "expected_keywords": ["예산", "23억", "1억5천만원", "1억3천만원"]
+      },
+      "difficulty": "hard",
+      "category": "비교"
+    },
+    {
+      "id": 26,
+      "query": "사업 기간이 가장 긴 프로젝트는?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_006"],
+        "relevant_filenames": ["나노종합기술원_스마트 팹 서비스.hwp"],
+        "expected_keywords": ["18개월", "사업기간"]
+      },
+      "difficulty": "hard",
+      "category": "비교"
+    },
+    {
+      "id": 27,
+      "query": "교육 관련 시스템과 문화 관련 시스템을 비교했을 때 공통점은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_001", "doc_005"],
+        "relevant_filenames": ["한영대학_한영대학교 특성화 맞춤형 교육환경 구축.hwp", "광주문화재단_광주문화예술통합플랫폼.hwp"],
+        "expected_keywords": ["시스템", "사용자", "관리", "플랫폼"]
+      },
+      "difficulty": "hard",
+      "category": "비교"
+    },
+    {
+      "id": 28,
+      "query": "기술 스택 측면에서 가장 복잡한 시스템은?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_006"],
+        "relevant_filenames": ["나노종합기술원_스마트 팹 서비스.hwp"],
+        "expected_keywords": ["Oracle", "Kafka", "SECS", "설비온라인"]
+      },
+      "difficulty": "hard",
+      "category": "비교"
+    },
+    {
+      "id": 29,
+      "query": "반도체 관련 기술을 다루는 사업의 주요 기대효과는?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_006"],
+        "relevant_filenames": ["나노종합기술원_스마트 팹 서비스.hwp"],
+        "expected_keywords": ["반도체", "나노팹", "연구개발", "시간단축"]
+      },
+      "difficulty": "hard",
+      "category": "기능"
+    },
+    {
+      "id": 30,
+      "query": "어떤 사업들이 데이터 관리와 분석 기능을 포함하고 있나?",
+      "ground_truth": {
+        "relevant_doc_ids": ["doc_002", "doc_005", "doc_006"],
+        "relevant_filenames": ["한국연구재단_2024년 대학산학협력활동 실태조사 시스템.hwp", "광주문화재단_광주문화예술통합플랫폼.hwp", "나노종합기술원_스마트 팹 서비스.hwp"],
+        "expected_keywords": ["데이터", "관리", "분석", "시스템"]
+      },
+      "difficulty": "hard",
+      "category": "비교"
+    }
+  ]
+}
