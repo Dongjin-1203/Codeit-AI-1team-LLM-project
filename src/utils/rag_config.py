@@ -12,7 +12,7 @@ class RAGConfig:
 
         # ===== 모델 설정 =====
         self.EMBEDDING_MODEL_NAME = "text-embedding-3-small"
-        self.LLM_MODEL_NAME = "gpt-5-mini"
+        self.LLM_MODEL_NAME = "gpt-4o-mini"
 
         # ===== API 키 =====
         self.OPENAI_API_KEY = self._get_api_key()

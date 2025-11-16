@@ -19,7 +19,7 @@ root_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(root_dir))
 
 from src.generator.rag_pipeline import RAGPipeline
-from src.utils.rag_config import RAGConfig
+from utils.rag_config import RAGConfig
 
 
 # ===== 페이지 설정 =====

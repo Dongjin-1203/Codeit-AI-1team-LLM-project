@@ -2,7 +2,7 @@ from langchain_chroma import Chroma
 from langchain_openai.embeddings import OpenAIEmbeddings
 import os
 
-from src.utils.rag_config import RAGConfig
+from utils.rag_config import RAGConfig
 
 
 class RAGRetriever:

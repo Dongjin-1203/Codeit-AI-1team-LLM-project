@@ -222,3 +222,16 @@ chroma_db/
 
 # wandb
 wandb/
+
+# 테스트 파일
+test.py
+src/evaluation/results/ragas_results.json
+src/evaluation/results/synthetic_testset.json
+src/evaluation/results/ragas_results_detail.csv
+src/evaluation/results/ragas_results.json
+src/evaluation/results/synthetic_testset.csv
+src/evaluation/synthetic_testset.csv
+src/evaluation/synthetic_testset.json
+
+# results
+src/evaluation/results/

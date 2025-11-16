@@ -1,144 +1,234 @@
+"""
+RAGAS Synthetic Dataset 생성 (간단 버전)
+
+Knowledge Graph 없이 직접 질문-답변 쌍 생성
+"""
+
 import sys
 from pathlib import Path
 
-# 프로젝트 루트를 Python path에 추가
-project_root = Path(__file__).resolve().parent.parent.parent
+project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
 
 import chromadb
 from langchain_core.documents import Document
+from langchain_openai import ChatOpenAI
 from typing import List
-from src.utils.rag_config import RAGConfig
+import json
+from datetime import datetime
+from datasets import Dataset
+import random
 
+from utils.rag_config import RAGConfig
+
+config = RAGConfig()
 
 def load_documents_from_chromadb() -> List[Document]:
-    """
-    ChromaDB에서 모든 문서를 가져와 LangChain Document 리스트로 변환
+    """ChromaDB에서 문서 로드"""
+    print("\n" + "="*80)
+    print("Step 1: ChromaDB에서 문서 로드")
+    print("="*80)
     
-    Returns:
-        List[Document]: RAGAS에서 사용할 Document 객체 리스트
-    """
-    # 1. RAG 설정 로드
-    config = RAGConfig()
-    
-    # 2. ChromaDB 클라이언트 연결
     chroma_client = chromadb.PersistentClient(path=config.DB_DIRECTORY)
-    
-    # 3. Collection 가져오기
     collection = chroma_client.get_collection(name=config.COLLECTION_NAME)
     
     print(f"✅ ChromaDB 연결 성공")
-    print(f"   경로: {config.DB_DIRECTORY}")
-    print(f"   Collection: {config.COLLECTION_NAME}")
     
-    # 4. 모든 문서 가져오기
-    results = collection.get(
-        include=['documents', 'metadatas']  # embeddings는 불필요
-    )
-    
+    results = collection.get(include=['documents', 'metadatas'])
     total_chunks = len(results['ids'])
+    
     print(f"📊 총 {total_chunks}개의 청크 발견")
     
-    # 5. LangChain Document 객체로 변환
     documents = []
-    
-    for i, (doc_id, text, metadata) in enumerate(
-        zip(results['ids'], results['documents'], results['metadatas'])
-    ):
-        # Document 객체 생성
+    for doc_id, text, metadata in zip(results['ids'], results['documents'], results['metadatas']):
         doc = Document(
-            page_content=text,  # 문서 텍스트
+            page_content=text,
             metadata={
                 'id': doc_id,
-                'filename': metadata.get('파일명', 'unknown'),
-                'organization': metadata.get('발주 기관', 'unknown'),
-                'chunk_index': i,
-                **metadata  # 기존 메타데이터 모두 포함
+                'filename': metadata.get('filename', 'unknown'),
+                **metadata
             }
         )
         documents.append(doc)
     
-    print(f"✅ {len(documents)}개 Document 객체 생성 완료")
-    
-    # 6. 샘플 확인
-    if documents:
-        print(f"\n📝 샘플 Document:")
-        print(f"   텍스트 길이: {len(documents[0].page_content)}자")
-        print(f"   메타데이터: {list(documents[0].metadata.keys())}")
-        print(f"   파일명 예시: {documents[0].metadata.get('filename', 'N/A')}")
-    
+    print(f"✅ {len(documents)}개 Document 생성 완료")
     return documents
 
 
-# def sample_documents(documents: List[Document], 
-#                      sample_per_file: int = 5) -> List[Document]:
-#     """
-#     문서가 너무 많을 경우 샘플링 (선택사항)
-    
-#     Args:
-#         documents: 전체 Document 리스트
-#         sample_per_file: 파일당 샘플링할 청크 수
-    
-#     Returns:
-#         샘플링된 Document 리스트
-#     """
-#     # 파일명별로 그룹화
-#     file_groups = {}
-#     for doc in documents:
-#         filename = doc.metadata.get('filename', 'unknown')
-#         if filename not in file_groups:
-#             file_groups[filename] = []
-#         file_groups[filename].append(doc)
-    
-#     # 각 파일에서 균등하게 샘플링
-#     sampled = []
-#     for filename, file_docs in file_groups.items():
-#         # 파일의 청크 수가 적으면 모두 사용
-#         if len(file_docs) <= sample_per_file:
-#             sampled.extend(file_docs)
-#         else:
-#             # 균등 간격으로 샘플링
-#             step = len(file_docs) // sample_per_file
-#             sampled.extend([file_docs[i * step] for i in range(sample_per_file)])
-    
-#     print(f"\n📌 샘플링 결과:")
-#     print(f"   전체: {len(documents)}개 → 샘플: {len(sampled)}개")
-#     print(f"   파일 수: {len(file_groups)}개")
-#     print(f"   파일당 평균: {len(sampled) / len(file_groups):.1f}개")
-    
-#     return sampled
-
-# ===== 사용 예시 =====
-if __name__ == "__main__":
+def generate_qa_from_document(doc: Document, llm: ChatOpenAI, num_questions: int = 2) -> List[dict]:
     """
-    문서 로드 테스트
+    단일 문서에서 질문-답변 쌍 생성
+    
+    Args:
+        doc: 문서
+        llm: LLM
+        num_questions: 생성할 질문 수
+    
+    Returns:
+        질문-답변 쌍 리스트
+    """
+    
+    prompt = f"""다음 문서를 읽고 {num_questions}개의 질문-답변 쌍을 생성하세요.
+
+문서:
+{doc.page_content[:2000]}
+
+요구사항:
+1. 문서 내용에 기반한 실제 답변 가능한 질문만 생성
+2. 다양한 유형의 질문 (단순, 추론, 비교 등)
+3. 답변은 문서에서 직접 찾을 수 있어야 함
+
+다음 JSON 형식으로 응답하세요:
+{{
+    "qa_pairs": [
+        {{
+            "question": "질문 내용",
+            "answer": "정답",
+            "context": "관련 문맥 (문서의 관련 부분)"
+        }}
+    ]
+}}
+
+JSON만 출력하고 다른 설명은 하지 마세요."""
+
+    try:
+        response = llm.invoke(prompt)
+        result = json.loads(response.content)
+        return result.get('qa_pairs', [])
+    except Exception as e:
+        print(f"   ⚠️ 생성 실패: {str(e)[:50]}")
+        return []
+
+
+def generate_synthetic_testset(documents: List[Document], testset_size: int = 100) -> Dataset:
+    """
+    Synthetic Dataset 생성 (간단 버전)
     """
     print("\n" + "="*80)
-    print("ChromaDB 문서 로드 테스트")
-    print("="*80 + "\n")
+    print("Step 2: Synthetic Dataset 생성")
+    print("="*80)
     
-    # 1. 모든 문서 로드
-    documents = load_documents_from_chromadb()
+    print(f"📊 생성 설정:")
+    print(f"   목표 개수: {testset_size}개")
+    print(f"   문서 수: {len(documents)}개")
     
-    # 2. 샘플링 (선택사항)
-    # 전체 사용하려면 이 부분 주석 처리
-    # documents = sample_documents(documents, sample_per_file=5)
+    # LLM 초기화
+    llm = ChatOpenAI(model=config.LLM_MODEL_NAME, temperature=0.7)
+    print(f"✅ LLM 초기화: {config.LLM_MODEL_NAME}")
     
-    # 3. 결과 확인
-    print(f"\n{'='*80}")
-    print("📊 최종 통계")
-    print(f"{'='*80}")
-    print(f"총 Document 수: {len(documents)}")
-    print(f"평균 텍스트 길이: {sum(len(d.page_content) for d in documents) / len(documents):.0f}자")
+    # 문서 샘플링
+    sampled_docs = random.sample(documents, min(len(documents), testset_size))
     
-    # 파일별 분포
-    file_counts = {}
-    for doc in documents:
-        filename = doc.metadata.get('filename', 'unknown')
-        file_counts[filename] = file_counts.get(filename, 0) + 1
+    all_qa_pairs = []
     
-    print(f"\n파일별 청크 분포 (상위 5개):")
-    for filename, count in sorted(file_counts.items(), key=lambda x: x[1], reverse=True)[:5]:
-        print(f"  {filename[:50]}: {count}개")
+    print(f"\n⏳ 생성 시작...")
     
-    print(f"\n✅ 문서 로드 완료! RAGAS 생성에 사용 가능합니다.")
+    for i, doc in enumerate(sampled_docs):
+        if len(all_qa_pairs) >= testset_size:
+            break
+        
+        # 문서당 1-2개 질문 생성
+        qa_pairs = generate_qa_from_document(doc, llm, num_questions=1)
+        all_qa_pairs.extend(qa_pairs)
+        
+        if (i + 1) % 10 == 0:
+            print(f"   진행: {i+1}/{len(sampled_docs)} ({len(all_qa_pairs)}개 생성)")
+    
+    # testset_size만큼 자르기
+    all_qa_pairs = all_qa_pairs[:testset_size]
+    
+    print(f"\n✅ 생성 완료: {len(all_qa_pairs)}개")
+    
+    # Dataset 형식으로 변환
+    dataset_dict = {
+        'user_input': [qa['question'] for qa in all_qa_pairs],
+        'reference': [qa['answer'] for qa in all_qa_pairs],
+        'retrieved_contexts': [[qa['context']] for qa in all_qa_pairs]
+    }
+    
+    dataset = Dataset.from_dict(dataset_dict)
+    return dataset
+
+
+def analyze_testset(testset: Dataset):
+    """결과 분석"""
+    print("\n" + "="*80)
+    print("Step 3: 생성 결과 분석")
+    print("="*80)
+    
+    df = testset.to_pandas()
+    
+    print(f"📊 기본 통계:")
+    print(f"   총 개수: {len(df)}개")
+    
+    if 'user_input' in df.columns:
+        print(f"   평균 질문 길이: {df['user_input'].str.len().mean():.0f}자")
+    
+    if 'reference' in df.columns:
+        print(f"   평균 정답 길이: {df['reference'].str.len().mean():.0f}자")
+    
+    # 샘플
+    print(f"\n📝 랜덤 샘플 3개:")
+    for idx in random.sample(range(len(df)), min(3, len(df))):
+        row = df.iloc[idx]
+        print(f"\n[샘플 {idx+1}]")
+        print(f"질문: {row['user_input'][:100]}...")
+        print(f"정답: {row['reference'][:100]}...")
+
+
+def save_testset(testset: Dataset, output_path: str = "src/evaluation/results/synthetic_testset.json"):
+    """저장"""
+    print("\n" + "="*80)
+    print("Step 4: 테스트셋 저장")
+    print("="*80)
+    
+    testset.to_json(output_path)
+    print(f"✅ JSON 저장: {output_path}")
+    
+    csv_path = output_path.replace('.json', '.csv')
+    testset.to_pandas().to_csv(csv_path, index=False, encoding='utf-8-sig')
+    print(f"✅ CSV 저장: {csv_path}")
+
+
+def main():
+    """메인 실행"""
+    print("\n" + "="*80)
+    print("RAGAS Synthetic Dataset 생성 (간단 버전)")
+    print("="*80)
+    
+    try:
+        # 문서 로드
+        documents = load_documents_from_chromadb()
+        
+        # 생성 개수 설정
+        testset_size = 100
+        response = input(f"\n생성할 개수 (기본 {testset_size}): ")
+        if response.strip():
+            testset_size = int(response)
+        
+        # 생성
+        testset = generate_synthetic_testset(documents, testset_size)
+        
+        # 분석
+        analyze_testset(testset)
+        
+        # 저장
+        save_testset(testset)
+        
+        print("\n" + "="*80)
+        print("✅ 완료!")
+        print("="*80)
+        print(f"\n📁 생성된 파일:")
+        print(f"   - synthetic_testset.json")
+        print(f"   - synthetic_testset.csv")
+        
+    except KeyboardInterrupt:
+        print("\n\n⚠️ 중단되었습니다.")
+    except Exception as e:
+        print(f"\n❌ 오류: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main()
