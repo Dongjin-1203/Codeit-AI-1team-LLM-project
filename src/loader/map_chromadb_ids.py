@@ -2,7 +2,7 @@
 ChromaDB ID 매핑 스크립트
 
 이 스크립트는 ChromaDB에 저장된 실제 문서 ID를 확인하고,
-test_queries.json의 doc_001, doc_002 형식을 실제 ID로 매핑합니다.
+test_queries.json(평가용 데이터셋)의 doc_001, doc_002 형식을 실제 ID로 매핑합니다.
 
 사용법:
 1. 이 스크립트를 프로젝트 폴더에 복사

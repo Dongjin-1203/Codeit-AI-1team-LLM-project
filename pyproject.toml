@@ -46,6 +46,9 @@ python-dotenv = "^1.0.0"
 langchain-chroma = "^1.0.0"
 openpyxl = "^3.1.5"
 wandb = "^0.23.0"
+ragas = "^0.3.9"
+langsmith = "^0.4.43"
+datasets = "^4.4.1"
 
 [tool.poetry.group.dev.dependencies]
 # 개발 도구 (선택사항)
