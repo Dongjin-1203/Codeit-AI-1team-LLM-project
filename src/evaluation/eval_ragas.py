@@ -30,7 +30,7 @@ from utils.rag_config import RAGConfig
 
 config = RAGConfig()
 
-def load_testset(testset_path: str = "src/evaluation/results/synthetic_testset.json") -> Dataset:
+def load_testset(testset_path: str = "src/evaluation/results/synthetic_testset_100.json") -> Dataset:
     """테스트셋 로드"""
     print("\n" + "="*80)
     print("Step 1: 테스트셋 로드")
@@ -318,9 +318,9 @@ def main():
     
     try:
         # 테스트셋 로드
-        testset_path = input("\n테스트셋 경로 (기본: src/evaluation/results/synthetic_testset.json): ").strip()
+        testset_path = input("\n테스트셋 경로 (기본: src/evaluation/results/synthetic_testset_100.json): ").strip()
         if not testset_path:
-            testset_path = "src/evaluation/results/synthetic_testset.json"
+            testset_path = "src/evaluation/results/synthetic_testset_100.json"
         
         testset = load_testset(testset_path)
         

@@ -176,7 +176,7 @@ def analyze_testset(testset: Dataset):
         print(f"정답: {row['reference'][:100]}...")
 
 
-def save_testset(testset: Dataset, output_path: str = "src/evaluation/results/synthetic_testset.json"):
+def save_testset(testset: Dataset, output_path: str = "src/evaluation/results/synthetic_testset_100.json"):
     """저장"""
     print("\n" + "="*80)
     print("Step 4: 테스트셋 저장")
@@ -219,8 +219,8 @@ def main():
         print("✅ 완료!")
         print("="*80)
         print(f"\n📁 생성된 파일:")
-        print(f"   - synthetic_testset.json")
-        print(f"   - synthetic_testset.csv")
+        print(f"   - synthetic_testset_100.json")
+        print(f"   - synthetic_testset_100.csv")
         
     except KeyboardInterrupt:
         print("\n\n⚠️ 중단되었습니다.")
