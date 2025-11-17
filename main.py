@@ -63,7 +63,7 @@ def parse_arguments():
     preprocess_group.add_argument(
         '--output-chunks',
         type=str,
-        default='./data/rag_chunks_final.csv',
+        default='./data/rag_chunks_final_large.csv',
         help='청크 출력 파일 경로'
     )
     preprocess_group.add_argument(

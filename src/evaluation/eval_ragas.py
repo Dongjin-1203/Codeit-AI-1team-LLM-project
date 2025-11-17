@@ -1,9 +1,3 @@
-"""
-RAGAS 평가 실행 (LLM 설정 포함)
-
-RAGAS가 사용할 LLM을 명시적으로 설정
-"""
-
 import sys
 from pathlib import Path
 

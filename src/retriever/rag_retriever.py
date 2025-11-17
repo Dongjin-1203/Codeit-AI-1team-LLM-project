@@ -1,8 +1,10 @@
 from langchain_chroma import Chroma
 from langchain_openai.embeddings import OpenAIEmbeddings
+from langsmith import traceable
+import time
 import os
 
-from utils.rag_config import RAGConfig
+from src.utils.rag_config import RAGConfig
 
 
 class RAGRetriever:
@@ -32,6 +34,10 @@ class RAGRetriever:
             collection_name=self.config.COLLECTION_NAME
         )
 
+    @traceable(  # ✅ 추가!
+        name="RAG_Retriever_Search",  # LangSmith에 표시될 이름
+        metadata={"component": "retriever", "version": "1.0"}  # 메타데이터
+    )
     def search(self, query: str, top_k: int = None, filter_metadata: dict = None):
         """
         유사 문서 검색
@@ -44,6 +50,7 @@ class RAGRetriever:
         Returns:
             검색 결과 리스트
         """
+        start_time = time.time()
         if top_k is None:
             top_k = self.config.DEFAULT_TOP_K
 
@@ -72,6 +79,11 @@ class RAGRetriever:
                 'organization': doc.metadata.get('발주 기관', 'N/A')
             })
 
+        end_time = time.time()
+        search_time = end_time - start_time
+
+        # 메타데이터 추가 (선택)
+        print(f"🔍 검색 완료: {len(results)}개 ({search_time:.3f}초)")
         return formatted_results
 
     def search_by_organization(self, query: str, organization: str, top_k: int = None):

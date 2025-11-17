@@ -7,11 +7,11 @@ class RAGConfig:
 
     def __init__(self):
         # ===== 경로 설정 =====
-        self.RAG_INPUT_PATH = "./data/rag_chunks_final.csv"
+        self.RAG_INPUT_PATH = "./data/rag_chunks_final_large.csv"
         self.DB_DIRECTORY = "./chroma_db"
 
         # ===== 모델 설정 =====
-        self.EMBEDDING_MODEL_NAME = "text-embedding-3-small"
+        self.EMBEDDING_MODEL_NAME = "text-embedding-3-large"
         self.LLM_MODEL_NAME = "gpt-4o-mini"
 
         # ===== API 키 =====

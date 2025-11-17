@@ -13,7 +13,7 @@ class PreprocessConfig:
         # ===== 경로 설정 =====
         self.META_CSV_PATH = "./data/data_list.csv"
         self.BASE_FOLDER_PATH = "./data/files/"
-        self.OUTPUT_CHUNKS_PATH = "./data/rag_chunks_final.csv"
+        self.OUTPUT_CHUNKS_PATH = "./data/rag_chunks_final_large.csv"
         
         # ===== 청킹 설정 =====
         self.CHUNK_SIZE = 1000
