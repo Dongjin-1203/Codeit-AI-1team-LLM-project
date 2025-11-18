@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 from langchain_chroma import Chroma
 from langchain_openai.embeddings import OpenAIEmbeddings
 
-from src.utils.rag_config import RAGConfig
+from src.utils.config import RAGConfig
 
 
 class VectorDBLoader:

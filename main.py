@@ -17,7 +17,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from src.utils.preprocess_config import PreprocessConfig
+from src.utils.config import PreprocessConfig
 from src.loader.preprocess_pipeline import RAGPreprocessPipeline
 
 
@@ -63,7 +63,7 @@ def parse_arguments():
     preprocess_group.add_argument(
         '--output-chunks',
         type=str,
-        default='./data/rag_chunks_final_large.csv',
+        default='./data/rag_chunks_final_small.csv',
         help='청크 출력 파일 경로'
     )
     preprocess_group.add_argument(
@@ -154,7 +154,7 @@ def step_rag(args):
     
     try:
         # RAG 모듈 임포트
-        from src.generator.rag_pipeline import RAGPipeline
+        from src.generator.generator import RAGPipeline
         from src.utils.rag_config import RAGConfig
         
         # RAG 설정

@@ -17,7 +17,7 @@ sys.path.insert(0, str(root_dir))
 
 from src.visualization.vector_db_loader import VectorDBLoader
 from src.visualization.dimensionality_reduction import DimensionalityReducer
-from src.utils.rag_config import RAGConfig
+from src.utils.config import RAGConfig
 
 # ===== 자동 초기화 함수 =====
 @st.cache_resource

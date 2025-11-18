@@ -52,7 +52,7 @@ class ExperimentTracker:
         실험 결과 저장
         
         Args:
-            experiment_name: 실험 이름 (예: "baseline", "embedding-large")
+            experiment_name: 실험 이름 (예: "baseline", "embedding-small")
             config: 설정 정보 (임베딩 모델, Top-K 등)
             metrics: 평가 지표 (precision, recall 등)
             langsmith_url: LangSmith 결과 URL
@@ -418,7 +418,7 @@ if __name__ == "__main__":
     tracker.compare_experiments()
     
     # 예시 3: 개선 효과 확인
-    # tracker.show_improvement("baseline", "embedding-large")
+    # tracker.show_improvement("baseline", "embedding-small")
     
     # 예시 4: 차트 생성
     # tracker.plot_metrics()
