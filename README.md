@@ -45,7 +45,7 @@ python -m poetry run streamlit run src/visualization/streamlit_app.py
 # 6. 챗봇 서비스 실행
 python -m poetry run streamlit run src/visualization/chatbot_app.py
 
-# 7. 챗봇 서비스 실행
+# 7. LangSmith 실험 실행(API 및 프로젝트 생성 필요)
 python -m poetry run python run_experiment.py              # 대화형 메뉴
 python -m poetry run python run_experiment.py --run        # 실험 실행
 python -m poetry run python run_experiment.py --compare    # 실험 비교
