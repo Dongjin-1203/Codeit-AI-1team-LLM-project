@@ -20,7 +20,7 @@ from langsmith import Client, evaluate
 from dotenv import load_dotenv
 
 # 프로젝트 경로 추가
-project_root = Path(__file__).resolve().parent.parent
+project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.retriever.rag_retriever import RAGRetriever

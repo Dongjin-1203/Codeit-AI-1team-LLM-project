@@ -15,7 +15,7 @@ from pypdf import PdfReader
 import olefile
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from src.utils.preprocess_config import PreprocessConfig
+from src.utils.config import PreprocessConfig
 
 
 # ============================================================

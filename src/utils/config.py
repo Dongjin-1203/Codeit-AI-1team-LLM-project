@@ -46,7 +46,7 @@ class Config:
         self.DEFAULT_SEARCH_MODE = "hybrid_rerank"
         
         # ===== LLM 설정 =====
-        self.LLM_MODEL_NAME = "gpt-4o-mini"
+        self.LLM_MODEL_NAME = "gpt-5-mini"
         self.DEFAULT_TEMPERATURE = 0.0
         self.DEFAULT_MAX_TOKENS = 1000
 
@@ -98,6 +98,10 @@ class Config:
         self.validate_preprocess()
         self.validate_rag()
         return True
+
+    def validate(self):
+        """설정 유효성 검사 (하위 호환성)"""
+        return self.validate_preprocess()
 
     def __repr__(self):
         """설정 정보 출력"""
