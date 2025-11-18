@@ -97,7 +97,8 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 |프로젝트 총괄. 팀 회의 진행. 팀 혐업 환경 관리. RAG 개발. 대시보드 개발|RAG전략 수립. 학습 데이터 구성. 데이터 전처리 파이프라인 작성. 모델 성능관련 실험 진행|API 모델 선정 및 성능 비교. 프롬프트 개발. 모델 개선|API 모델 선정 및 성능 비교. 프롬프트 개발. 모델 개선|
 ---
 # 5. 프로젝트 타임라인
-<img width="1630" height="849" alt="image" src="https://github.com/user-attachments/assets/891947ab-f37a-4fb7-8cf6-370ea5d897b6" />
+<img width="1580" height="807" alt="image" src="https://github.com/user-attachments/assets/57f6346a-663f-4ddd-a4b6-fafc2074ff71" />
+
 
 ---
 # 6. 서비스 설명
