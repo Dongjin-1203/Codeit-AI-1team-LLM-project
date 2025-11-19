@@ -106,21 +106,6 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 ## 서비스 아키텍쳐
 <img width="4208" height="2004" alt="image" src="https://github.com/user-attachments/assets/73a0db09-b858-4b69-b93b-a85f928225a9" />
 
-
-
-## 데이터
-
-## 모델
----
-# 프로젝트 실행
-
-## 모델
-
-## 데이터
-
-## 프론트엔드
-
-## 백엔드
 ---
 # Further Information
 
