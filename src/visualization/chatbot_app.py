@@ -124,16 +124,14 @@ def initialize_rag(model_type):
         config = RAGConfig()
         
         if model_type == "API 모델 (GPT)":
-            # API 모델 사용
             from src.generator.generator import RAGPipeline
             rag = RAGPipeline(config=config)
             return rag, None, "API"
-            
-        else:  # "로컬 모델 (Llama)"
-            # 로컬 모델 사용
-            from src.generator.generator_local import LocalRAGPipeline
-            rag = LocalRAGPipeline(config=config)
-            return rag, None, "Local"
+        
+        else:  # "로컬 모델 (GGUF)"
+            from src.generator.generator_gguf import GGUFRAGPipeline
+            rag = GGUFRAGPipeline(config=config)
+            return rag, None, "Local-GGUF"
             
     except Exception as e:
         return None, str(e), None
@@ -267,19 +265,22 @@ def main():
         
         model_type = st.selectbox(
             "생성 모델 선택",
-            options=["API 모델 (GPT)", "로컬 모델 (Llama)"],
+            options=[
+                "API 모델 (GPT)",
+                "로컬 모델 (GGUF)"  
+            ],
             index=0,
             help="""
-            • API 모델: 빠르고 안정적, OpenAI API 사용
-            • 로컬 모델: 비용 절감, 데이터 보안, Fine-tuned Llama-3
+            • API 모델: 비용 발생, 빠르고 안정적, OpenAI API 사용
+            • 로컬 모델 (GGUF): 무료 모델, CPU/GPU 효율적, 메모리 절약
             """
         )
         
         # 모델 정보 표시
         if model_type == "API 모델 (GPT)":
             st.info("🌐 OpenAI GPT 모델 사용 중")
-        else:
-            st.info("💻 로컬 Fine-tuned Llama-3 모델 사용 중")
+        else:  # GGUF
+            st.info("⚡ 로컬 GGUF 모델 사용 중 (메모리 효율)")
         
         st.markdown("---")
         

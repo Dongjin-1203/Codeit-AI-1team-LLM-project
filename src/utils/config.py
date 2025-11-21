@@ -49,19 +49,27 @@ class Config:
         self.LLM_MODEL_NAME = "gpt-5-mini"
         self.DEFAULT_TEMPERATURE = 0.0
         self.DEFAULT_MAX_TOKENS = 1000
+
+        # ========== GGUF 모델 설정 (신규) ==========
+        self.GGUF_MODEL_PATH = "./models/Llama-3-Open-Ko-8B.Q4_K_M.gguf"
+        self.GGUF_N_GPU_LAYERS = 35  # GPU에 올릴 레이어 수 (0 = CPU만, 35 = 전체)
+        self.GGUF_N_CTX = 16384  # 컨텍스트 길이
+        self.GGUF_N_THREADS = 8  # CPU 스레드 수
         
-        # ===== Fine-tuned 모델 설정 =====
-        self.FINETUNED_BASE_MODEL = "beomi/Llama-3-Open-Ko-8B"
-        self.FINETUNED_ADAPTER_PATH = "./models/qlora_adapter/"
-        
-        # Fine-tuned 생성 파라미터
-        self.FINETUNED_MAX_NEW_TOKENS = 512
-        self.FINETUNED_TEMPERATURE = 0.7
-        self.FINETUNED_TOP_P = 0.9
-        self.FINETUNED_DO_SAMPLE = True
+        self.GGUF_MAX_NEW_TOKENS = 512
+        self.GGUF_TEMPERATURE = 0.5
+        self.GGUF_TOP_P = 0.9
         
         # 시스템 프롬프트
         self.SYSTEM_PROMPT = "당신은 RFP(제안요청서) 분석 및 요약 전문가입니다."
+
+    def validate_gguf(self):
+        """GGUF 모델 설정 유효성 검사"""
+        if not os.path.exists(self.GGUF_MODEL_PATH):
+            raise FileNotFoundError(
+                f"GGUF 모델 파일을 찾을 수 없습니다: {self.GGUF_MODEL_PATH}"
+            )
+        return True
 
     def _get_api_key(self) -> str:
         """환경변수에서 API 키 로드"""
@@ -105,30 +113,11 @@ class Config:
             )
         
         return True
-    
-    def validate_finetuned(self):
-        """Fine-tuned 모델 설정 유효성 검사"""
-        if not os.path.exists(self.FINETUNED_ADAPTER_PATH):
-            raise FileNotFoundError(
-                f"어댑터 경로를 찾을 수 없습니다: {self.FINETUNED_ADAPTER_PATH}"
-            )
-        
-        # 어댑터 파일 존재 확인
-        required_files = ["adapter_config.json"]
-        for file in required_files:
-            file_path = os.path.join(self.FINETUNED_ADAPTER_PATH, file)
-            if not os.path.exists(file_path):
-                raise FileNotFoundError(
-                    f"필수 어댑터 파일을 찾을 수 없습니다: {file_path}"
-                )
-        
-        return True
 
     def validate_all(self):
         """전체 설정 유효성 검사"""
         self.validate_preprocess()
         self.validate_rag()
-        self.validate_finetuned()
         return True
 
     def validate(self):
