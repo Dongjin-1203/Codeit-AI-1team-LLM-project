@@ -265,6 +265,40 @@ class RAGRetriever:
         print(f"🔍 검색 완료: {len(results)}개 ({end_time-start_time:.3f}초)")
         return formatted_results
 
+    def search_with_rerank(self, query, top_k=None, rerank_candidates=None):
+        """
+        임베딩 검색 + Re-ranking
+        
+        Args:
+            query: 검색 쿼리
+            top_k: 최종 반환할 문서 수
+            rerank_candidates: Re-rank할 후보 수
+        
+        Returns:
+            재정렬된 문서 리스트
+        """
+        start_time = time.time()
+        
+        if top_k is None:
+            top_k = self.config.DEFAULT_TOP_K
+        
+        if rerank_candidates is None:
+            rerank_candidates = top_k * 3
+        
+        # 1. 임베딩 검색으로 후보 가져오기
+        candidates = self.search(query, top_k=rerank_candidates)
+        
+        # 2. Re-ranking
+        if len(candidates) > 0:
+            results = self._rerank(query, candidates, top_k)
+        else:
+            results = []
+        
+        end_time = time.time()
+        print(f"🔄 Embedding + Re-ranking 완료: {len(candidates)}개 → {len(results)}개 ({end_time-start_time:.3f}초)")
+        
+        return results
+
     def search_by_organization(self, query: str, organization: str, top_k: int = None):
         """특정 발주기관만 검색"""
         return self.search(

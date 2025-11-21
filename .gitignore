@@ -235,3 +235,6 @@ src/evaluation/synthetic_testset.json
 
 # results
 src/evaluation/results/
+
+# models
+models/

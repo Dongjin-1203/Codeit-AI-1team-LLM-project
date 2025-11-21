@@ -2,6 +2,7 @@
 공공기관 사업제안서 RAG 챗봇
 
 기능:
+- 모델 선택 (API/로컬)
 - RAG 기반 질의응답 (Hybrid Search + Re-ranker)
 - 참고 문서 표시
 - 대화 히스토리 관리
@@ -18,7 +19,6 @@ import json
 root_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(root_dir))
 
-from src.generator.generator import RAGPipeline
 from src.utils.config import RAGConfig
 
 
@@ -112,17 +112,31 @@ if 'messages' not in st.session_state:
 if 'rag_pipeline' not in st.session_state:
     st.session_state.rag_pipeline = None
 
+if 'model_type' not in st.session_state:
+    st.session_state.model_type = None
+
 
 # ===== RAG 파이프라인 초기화 =====
 @st.cache_resource
-def initialize_rag():
-    """RAG 파이프라인 초기화 (캐싱)"""
+def initialize_rag(model_type):
+    """RAG 파이프라인 초기화 (모델 타입에 따라 분기)"""
     try:
         config = RAGConfig()
-        rag = RAGPipeline(config=config)
-        return rag, None
+        
+        if model_type == "API 모델 (GPT)":
+            # API 모델 사용
+            from src.generator.generator import RAGPipeline
+            rag = RAGPipeline(config=config)
+            return rag, None, "API"
+            
+        else:  # "로컬 모델 (Llama)"
+            # 로컬 모델 사용
+            from src.generator.generator_local import LocalRAGPipeline
+            rag = LocalRAGPipeline(config=config)
+            return rag, None, "Local"
+            
     except Exception as e:
-        return None, str(e)
+        return None, str(e), None
 
 
 # ===== 답변 생성 =====
@@ -188,6 +202,7 @@ def display_message(role: str, content: str, sources: list = None, usage: dict =
             mode_display = {
                 'hybrid_rerank': '🔄 Hybrid + Re-ranker',
                 'hybrid': '🔀 Hybrid Search',
+                'embedding_rerank': '📊 임베딩 + Re-ranker',
                 'embedding': '📊 임베딩 검색'
             }
             st.markdown(f"""
@@ -247,20 +262,56 @@ def main():
     with st.sidebar:
         st.header("⚙️ 설정")
         
+        # 모델 설정
+        st.markdown("### 🤖 모델 설정")
+        
+        model_type = st.selectbox(
+            "생성 모델 선택",
+            options=["API 모델 (GPT)", "로컬 모델 (Llama)"],
+            index=0,
+            help="""
+            • API 모델: 빠르고 안정적, OpenAI API 사용
+            • 로컬 모델: 비용 절감, 데이터 보안, Fine-tuned Llama-3
+            """
+        )
+        
+        # 모델 정보 표시
+        if model_type == "API 모델 (GPT)":
+            st.info("🌐 OpenAI GPT 모델 사용 중")
+        else:
+            st.info("💻 로컬 Fine-tuned Llama-3 모델 사용 중")
+        
+        st.markdown("---")
+        
         # 검색 설정
         st.markdown("### 🔍 검색 설정")
         
         search_mode = st.selectbox(
             "검색 모드",
-            options=["hybrid_rerank", "hybrid", "embedding"],
+            options=["hybrid", "embedding"],
             index=0,
             format_func=lambda x: {
-                "hybrid_rerank": "🔄 Hybrid + Re-ranker (권장)",
-                "hybrid": "🔀 Hybrid Search",
+                "hybrid": "🔀 Hybrid Search (BM25 + 임베딩)",
                 "embedding": "📊 임베딩 검색"
             }[x],
-            help="hybrid_rerank: BM25 + 임베딩 + Re-ranker (최고 성능)"
+            help="Hybrid: 키워드 + 의미 검색 병행 (권장)"
         )
+        
+        # Reranker 토글
+        use_reranker = st.toggle(
+            "🔄 Re-ranker 사용",
+            value=True,
+            help="검색 결과를 CrossEncoder로 재정렬하여 정확도 향상 (권장)"
+        )
+        
+        # 실제 검색 모드 결정
+        if use_reranker:
+            if search_mode == "hybrid":
+                actual_search_mode = "hybrid_rerank"
+            else:  # embedding
+                actual_search_mode = "embedding_rerank"
+        else:
+            actual_search_mode = search_mode
         
         top_k = st.slider(
             "검색할 문서 개수 (Top-K)",
@@ -276,7 +327,8 @@ def main():
             max_value=1.0,
             value=0.5,
             step=0.1,
-            help="0: BM25만, 1: 임베딩만, 0.5: 동일 가중치"
+            help="0: BM25만, 1: 임베딩만, 0.5: 동일 가중치 (Hybrid 모드에서만 사용)",
+            disabled=(search_mode == "embedding")
         )
         
         st.markdown("---")
@@ -315,14 +367,21 @@ def main():
         # 현재 설정 표시
         st.markdown("---")
         st.markdown("### 📋 현재 설정")
+        st.text(f"모델: {model_type}")
         st.text(f"검색 모드: {search_mode}")
+        st.text(f"Re-ranker: {'✅ ON' if use_reranker else '❌ OFF'}")
+        st.text(f"실제 모드: {actual_search_mode}")
         st.text(f"Top-K: {top_k}")
-        st.text(f"Alpha: {alpha}")
+        if search_mode == "hybrid":
+            st.text(f"Alpha: {alpha}")
     
     # ===== RAG 파이프라인 초기화 =====
-    if st.session_state.rag_pipeline is None:
-        with st.spinner("🔄 RAG 파이프라인 초기화 중..."):
-            rag, error = initialize_rag()
+    # 모델 타입이 변경되었거나 파이프라인이 없으면 재초기화
+    if (st.session_state.rag_pipeline is None or 
+        st.session_state.model_type != model_type):
+        
+        with st.spinner(f"🔄 {model_type} 초기화 중..."):
+            rag, error, rag_type = initialize_rag(model_type)
             
             if error:
                 st.error(f"❌ RAG 파이프라인 초기화 실패: {error}")
@@ -334,13 +393,19 @@ def main():
 python main.py --step embed
 ```
                 
-                2. OpenAI API 키가 설정되었는지 확인:
+                2. OpenAI API 키가 설정되었는지 확인 (API 모델 사용 시):
 ```bash
 # .env 파일
 OPENAI_API_KEY=your-key-here
 ```
                 
-                3. 필요한 패키지 설치:
+                3. 로컬 모델 어댑터 경로 확인 (로컬 모델 사용 시):
+```bash
+# config.py
+FINETUNED_ADAPTER_PATH = "./models/qlora_adapter"
+```
+                
+                4. 필요한 패키지 설치:
 ```bash
 pip install rank-bm25 sentence-transformers
 ```
@@ -348,7 +413,8 @@ pip install rank-bm25 sentence-transformers
                 return
             
             st.session_state.rag_pipeline = rag
-            st.success("✅ RAG 파이프라인 준비 완료!")
+            st.session_state.model_type = model_type
+            st.success(f"✅ {rag_type} 모델 준비 완료!")
     
     # ===== 대화 히스토리 표시 =====
     st.markdown("---")
@@ -401,7 +467,7 @@ pip install rank-bm25 sentence-transformers
             result = generate_answer(
                 query=user_input,
                 top_k=top_k,
-                search_mode=search_mode,
+                search_mode=actual_search_mode,
                 alpha=alpha
             )
         
@@ -411,48 +477,11 @@ pip install rank-bm25 sentence-transformers
             'content': result['answer'],
             'sources': result.get('sources', []),
             'usage': result.get('usage', {}),
-            'search_mode': result.get('search_mode', search_mode)
+            'search_mode': result.get('search_mode', actual_search_mode)
         })
         
         # 화면 새로고침
         st.rerun()
-    
-    # ===== 예시 질문 =====
-    st.markdown("### 💡 예시 질문")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    example_questions = [
-        "데이터 표준화 요구사항은?",
-        "보안 관련 요구사항은?",
-        "사업 수행 산출물 저장 위치는?"
-    ]
-    
-    for col, question in zip([col1, col2, col3], example_questions):
-        with col:
-            if st.button(f"💬 {question}", use_container_width=True):
-                st.session_state.messages.append({
-                    'role': 'user',
-                    'content': question
-                })
-                
-                with st.spinner("🤔 답변 생성 중..."):
-                    result = generate_answer(
-                        query=question,
-                        top_k=top_k,
-                        search_mode=search_mode,
-                        alpha=alpha
-                    )
-                
-                st.session_state.messages.append({
-                    'role': 'assistant',
-                    'content': result['answer'],
-                    'sources': result.get('sources', []),
-                    'usage': result.get('usage', {}),
-                    'search_mode': result.get('search_mode', search_mode)
-                })
-                
-                st.rerun()
 
 
 if __name__ == "__main__":
