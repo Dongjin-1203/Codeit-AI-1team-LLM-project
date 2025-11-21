@@ -22,7 +22,7 @@
 - Poetry 설치됨
 - 저장소 클론 완료
 - 데이터셋 로컬에 저장
-- 양자화된 모델 파일(.gguf) 다운
+- 양자화된 모델 파일(.gguf) 저장
 - .env 생성(api키 입력)
 
 **env 파일 설정 방법**
@@ -33,6 +33,8 @@ LANGCHAIN_TRACING_V2=true
 LANGSMITH_API_KEY = "LangSmith API 키"
 LANGCHAIN_PROJECT = "LangSmith 프로젝트 이름"
 ```
+
+**코드 실행**
 ```powershell
 # 1. 프로젝트 폴더로 이동
 cd Codeit-AI-1team-LLM-project
