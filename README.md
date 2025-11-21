@@ -24,6 +24,14 @@
 - 데이터셋 로컬에 저장
 - .env 생성(api키 입력)
 
+**env 파일 설정 방법**
+```env
+OPENAI_API_KEY = "OpenAI API 키"
+WANDB_API_KEY = "WanDB API 키"
+LANGCHAIN_TRACING_V2=true
+LANGSMITH_API_KEY = "LangSmith API 키"
+LANGCHAIN_PROJECT = "LangSmith 프로젝트 이름"
+```
 ```powershell
 # 1. 프로젝트 폴더로 이동
 cd Codeit-AI-1team-LLM-project
