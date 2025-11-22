@@ -3,8 +3,9 @@
 
 기능:
 - 모델 선택 (API/로컬)
+- Query Router (검색 vs 직접 답변)
 - RAG 기반 질의응답 (Hybrid Search + Re-ranker)
-- 참고 문서 표시
+- 조건부 참고 문서 표시
 - 대화 히스토리 관리
 - 검색 모드 선택
 """
@@ -20,6 +21,7 @@ root_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(root_dir))
 
 from src.utils.config import RAGConfig
+from src.utils.conversation_manager import ConversationManager
 
 
 # ===== 페이지 설정 =====
@@ -101,19 +103,30 @@ st.markdown("""
         font-size: 0.9rem;
         margin-top: 0.5rem;
     }
+    .routing-info {
+        background-color: #fff3e0;
+        padding: 0.5rem 1rem;
+        border-radius: 0.3rem;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        border-left: 3px solid #ff9800;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 
 # ===== 세션 상태 초기화 =====
-if 'messages' not in st.session_state:
-    st.session_state.messages = []
+if 'conv_manager' not in st.session_state:
+    st.session_state.conv_manager = ConversationManager()
 
 if 'rag_pipeline' not in st.session_state:
     st.session_state.rag_pipeline = None
 
 if 'model_type' not in st.session_state:
     st.session_state.model_type = None
+
+if 'show_routing_info' not in st.session_state:
+    st.session_state.show_routing_info = False
 
 
 # ===== RAG 파이프라인 초기화 =====
@@ -153,13 +166,23 @@ def generate_answer(query: str, top_k: int = 10, search_mode: str = "hybrid_rera
         return {
             'answer': f"❌ 오류가 발생했습니다: {str(e)}",
             'sources': [],
+            'used_retrieval': False,  # ← 추가
             'search_mode': search_mode,
+            'routing_info': None,  # ← 추가
             'usage': {'total_tokens': 0, 'prompt_tokens': 0, 'completion_tokens': 0}
         }
 
 
 # ===== 메시지 표시 =====
-def display_message(role: str, content: str, sources: list = None, usage: dict = None, search_mode: str = None):
+def display_message(
+    role: str, 
+    content: str, 
+    sources: list = None, 
+    usage: dict = None, 
+    search_mode: str = None,
+    used_retrieval: bool = None,  # ← 신규
+    routing_info: dict = None  # ← 신규
+):
     """
     메시지를 화면에 표시
     
@@ -169,6 +192,8 @@ def display_message(role: str, content: str, sources: list = None, usage: dict =
         sources: 참고 문서 리스트 (assistant만)
         usage: 토큰 사용량 (assistant만)
         search_mode: 검색 모드 (assistant만)
+        used_retrieval: 검색 사용 여부 (assistant만)
+        routing_info: 라우팅 정보 (assistant만)
     """
     if role == 'user':
         st.markdown(f"""
@@ -195,13 +220,25 @@ def display_message(role: str, content: str, sources: list = None, usage: dict =
         </div>
         """, unsafe_allow_html=True)
         
-        # 검색 모드 정보
-        if search_mode:
+        # ===== 라우팅 정보 (개발 모드) =====
+        if st.session_state.show_routing_info and routing_info:
+            route_icon = "🔍" if routing_info.get('route') == 'rag' else "💬"
+            st.markdown(f"""
+            <div class="routing-info">
+                {route_icon} 라우팅: {routing_info.get('route', 'N/A').upper()} 
+                (신뢰도: {routing_info.get('confidence', 0):.2f}) - 
+                {routing_info.get('reason', 'N/A')}
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # ===== 검색 모드 정보 (검색 사용 시만) =====
+        if used_retrieval and search_mode:
             mode_display = {
                 'hybrid_rerank': '🔄 Hybrid + Re-ranker',
                 'hybrid': '🔀 Hybrid Search',
                 'embedding_rerank': '📊 임베딩 + Re-ranker',
-                'embedding': '📊 임베딩 검색'
+                'embedding': '📊 임베딩 검색',
+                'direct': '💬 Direct (검색 없음)'  # ← 추가
             }
             st.markdown(f"""
             <div class="search-mode-info">
@@ -209,8 +246,8 @@ def display_message(role: str, content: str, sources: list = None, usage: dict =
             </div>
             """, unsafe_allow_html=True)
         
-        # 참고 문서
-        if sources:
+        # ===== 참고 문서 (검색 사용 시만) =====
+        if used_retrieval and sources and len(sources) > 0:
             st.markdown("### 📚 참고 문서")
             
             for i, source in enumerate(sources, 1):
@@ -238,8 +275,11 @@ def display_message(role: str, content: str, sources: list = None, usage: dict =
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+        elif not used_retrieval:
+            # 검색을 사용하지 않은 경우 안내
+            st.info("💬 이 답변은 문서 검색 없이 생성되었습니다.")
         
-        # 토큰 사용량
+        # ===== 토큰 사용량 =====
         if usage:
             st.markdown(f"""
             <div class="token-usage">
@@ -254,7 +294,7 @@ def display_message(role: str, content: str, sources: list = None, usage: dict =
 def main():
     # 헤더
     st.markdown('<div class="main-header">🤖 공공기관 사업제안서 챗봇</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-header">RAG 기반 질의응답 시스템 (Hybrid Search + Re-ranker)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">Query Router + RAG 기반 질의응답 시스템</div>', unsafe_allow_html=True)
     
     # ===== 사이드바 =====
     with st.sidebar:
@@ -269,10 +309,10 @@ def main():
                 "API 모델 (GPT)",
                 "로컬 모델 (GGUF)"  
             ],
-            index=0,
+            index=1,  # 기본값을 GGUF로 (Router 있음)
             help="""
-            • API 모델: 비용 발생, 빠르고 안정적, OpenAI API 사용
-            • 로컬 모델 (GGUF): 무료 모델, CPU/GPU 효율적, 메모리 절약
+            • API 모델: OpenAI API 사용 (빠르고 안정적)
+            • 로컬 모델 (GGUF): Query Router 포함, 메모리 효율적
             """
         )
         
@@ -280,7 +320,7 @@ def main():
         if model_type == "API 모델 (GPT)":
             st.info("🌐 OpenAI GPT 모델 사용 중")
         else:  # GGUF
-            st.info("⚡ 로컬 GGUF 모델 사용 중 (메모리 효율)")
+            st.success("⚡ 로컬 GGUF + Query Router 사용 중")
         
         st.markdown("---")
         
@@ -318,8 +358,8 @@ def main():
             "검색할 문서 개수 (Top-K)",
             min_value=1,
             max_value=20,
-            value=10,
-            help="Re-ranker 사용 시 더 많이 검색해도 좋음"
+            value=7,  # 기본값 조정 (Router로 불필요한 검색 줄어듦)
+            help="Router가 검색이 필요한 경우에만 사용됨"
         )
         
         alpha = st.slider(
@@ -334,22 +374,28 @@ def main():
         
         st.markdown("---")
         
+        # 개발자 옵션
+        st.markdown("### 🛠️ 개발자 옵션")
+        
+        show_routing = st.toggle(
+            "🔍 라우팅 정보 표시",
+            value=False,
+            help="Router의 판단 과정을 표시 (디버깅용)"
+        )
+        st.session_state.show_routing_info = show_routing
+        
+        st.markdown("---")
+        
         # 대화 관리
         st.markdown("### 💬 대화 관리")
         
         if st.button("🗑️ 대화 초기화", use_container_width=True):
-            st.session_state.messages = []
+            st.session_state.conv_manager.clear()
             st.rerun()
         
         if st.button("💾 대화 다운로드", use_container_width=True):
-            if st.session_state.messages:
-                # JSON으로 대화 저장
-                chat_data = {
-                    'timestamp': datetime.now().isoformat(),
-                    'messages': st.session_state.messages
-                }
-                
-                json_str = json.dumps(chat_data, ensure_ascii=False, indent=2)
+            if len(st.session_state.conv_manager) > 0:  # ✅ conv_manager 사용
+                json_str = st.session_state.conv_manager.export_to_json()
                 
                 st.download_button(
                     label="📥 JSON 다운로드",
@@ -363,7 +409,9 @@ def main():
         
         # 통계
         st.markdown("### 📊 통계")
-        st.metric("총 대화 수", len(st.session_state.messages) // 2)
+        stats = st.session_state.conv_manager.get_statistics()
+
+        st.metric("총 대화 수", stats.get('total', 0))
         
         # 현재 설정 표시
         st.markdown("---")
@@ -375,6 +423,7 @@ def main():
         st.text(f"Top-K: {top_k}")
         if search_mode == "hybrid":
             st.text(f"Alpha: {alpha}")
+        st.text(f"Router Info: {'✅ ON' if show_routing else '❌ OFF'}")
     
     # ===== RAG 파이프라인 초기화 =====
     # 모델 타입이 변경되었거나 파이프라인이 없으면 재초기화
@@ -400,15 +449,15 @@ python main.py --step embed
 OPENAI_API_KEY=your-key-here
 ```
                 
-                3. 로컬 모델 어댑터 경로 확인 (로컬 모델 사용 시):
+                3. GGUF 모델 파일 확인 (로컬 모델 사용 시):
 ```bash
 # config.py
-FINETUNED_ADAPTER_PATH = "./models/qlora_adapter"
+GGUF_MODEL_PATH = "./models/your-model.gguf"
 ```
                 
                 4. 필요한 패키지 설치:
 ```bash
-pip install rank-bm25 sentence-transformers
+pip install rank-bm25 sentence-transformers llama-cpp-python
 ```
                 """)
                 return
@@ -420,24 +469,33 @@ pip install rank-bm25 sentence-transformers
     # ===== 대화 히스토리 표시 =====
     st.markdown("---")
     
-    if len(st.session_state.messages) == 0:
+    if len(st.session_state.conv_manager) == 0:  # ✅ conv_manager 사용
         st.info("""
         ### 👋 환영합니다!
         
-        공공기관 사업제안서에 대해 질문해보세요. 예시:
-        - "데이터 표준화 요구사항은 무엇인가요?"
-        - "보안 관련 요구사항을 설명해주세요"
-        - "사업 수행 시 산출물은 어디에 저장해야 하나요?"
+        공공기관 사업제안서에 대해 질문해보세요. 
+        
+        **Router가 자동으로 판단합니다:**
+        - 📚 문서 검색이 필요한 질문 → RAG 수행
+        - 💬 일반 대화/인사 → 직접 답변
+        
+        **예시 질문:**
+        - "안녕하세요" (검색 안 함)
+        - "데이터 표준화 요구사항은 무엇인가요?" (검색 수행)
+        - "보안 관련 요구사항을 설명해주세요" (검색 수행)
+        - "고마워요" (검색 안 함)
         """)
     
     # 기존 메시지 표시
-    for msg in st.session_state.messages:
+    for msg in st.session_state.conv_manager.get_ui_history():
         display_message(
             role=msg['role'],
             content=msg['content'],
             sources=msg.get('sources'),
             usage=msg.get('usage'),
-            search_mode=msg.get('search_mode')
+            search_mode=msg.get('search_mode'),
+            used_retrieval=msg.get('used_retrieval'),  # ← 신규
+            routing_info=msg.get('routing_info')  # ← 신규
         )
     
     # ===== 질문 입력 =====
@@ -457,12 +515,7 @@ pip install rank-bm25 sentence-transformers
     
     # ===== 질문 처리 =====
     if submit_button and user_input:
-        # 사용자 메시지 추가
-        st.session_state.messages.append({
-            'role': 'user',
-            'content': user_input
-        })
-        
+
         # 답변 생성
         with st.spinner("🤔 답변 생성 중..."):
             result = generate_answer(
@@ -473,13 +526,16 @@ pip install rank-bm25 sentence-transformers
             )
         
         # 어시스턴트 메시지 추가
-        st.session_state.messages.append({
-            'role': 'assistant',
-            'content': result['answer'],
-            'sources': result.get('sources', []),
-            'usage': result.get('usage', {}),
-            'search_mode': result.get('search_mode', actual_search_mode)
-        })
+        st.session_state.conv_manager.add_message(
+            user_msg=user_input,
+            ai_msg=result['answer'],
+            query_type=result.get('query_type', 'unknown'),
+            sources=result.get('sources', []),
+            usage=result.get('usage', {}),
+            search_mode=result.get('search_mode'),
+            used_retrieval=result.get('used_retrieval', False),
+            routing_info=result.get('routing_info')
+        )
         
         # 화면 새로고침
         st.rerun()

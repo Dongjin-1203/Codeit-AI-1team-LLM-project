@@ -3,6 +3,9 @@ from typing import Optional, Dict, Any, List
 import logging
 import time
 
+from src.router.query_router import QueryRouter
+from src.prompts.dynamic_prompts import PromptManager
+
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -114,7 +117,11 @@ class GGUFGenerator:
         # 시스템 프롬프트 설정
         if system_prompt is None:
             system_prompt = self.system_prompt
-        
+            logger.warning("⚠️ system_prompt가 None! 기본 프롬프트 사용")
+        else:
+            # 동적 프롬프트 미리보기 (처음 150자만)
+            logger.info(f"✅ 동적 프롬프트 적용:\n{system_prompt[:150]}...")  # ← 추가
+            
         # 컨텍스트 포함 여부
         if context is not None:
             user_message = f"참고 문서:\n{context}\n\n질문: {question}"
@@ -199,6 +206,7 @@ class GGUFGenerator:
         self,
         question: str,
         context: Optional[str] = None,
+        system_prompt=None,
         **kwargs
     ) -> str:
         """
@@ -212,12 +220,16 @@ class GGUFGenerator:
         Returns:
             생성된 응답
         """
-        # 프롬프트 포맷팅
-        formatted_prompt = self.format_prompt(question, context)
+        # 프롬프트 포맷팅 (system_prompt 전달)
+        formatted_prompt = self.format_prompt(
+            question=question,
+            context=context,
+            system_prompt=system_prompt  # ← 추가!
+        )
         
         # 응답 생성
         response = self.generate(formatted_prompt, **kwargs)
-        
+
         return response
     
     def get_model_info(self) -> Dict[str, Any]:
@@ -265,7 +277,7 @@ class GGUFRAGPipeline:
         """
         # Config import (지연 import로 순환 참조 방지)
         from src.utils.config import RAGConfig
-        from src.retriever.rag_retriever import RAGRetriever
+        from src.retriever.retriever import RAGRetriever
         
         self.config = config or RAGConfig()
         self.top_k = top_k or self.config.DEFAULT_TOP_K
@@ -398,27 +410,52 @@ class GGUFRAGPipeline:
             alpha: 임베딩 가중치
         
         Returns:
-            dict: answer, sources, search_mode, usage, elapsed_time
+            dict: answer, sources, search_mode, usage, elapsed_time, used_retrieval
         """
         try:
             start_time = time.time()
             
-            # 파라미터 설정
+            # 파라미터 설정 (검색 전에 먼저 설정)
             if top_k is not None:
                 self.top_k = top_k
             if search_mode is not None:
                 self.search_mode = search_mode
             if alpha is not None:
                 self.alpha = alpha
+
+            # ===== Router로 검색 여부 결정 =====
+            router = QueryRouter()
+            classification = router.classify(query)
+            query_type = classification['type']  # 'greeting'/'thanks'/'document'/'out_of_scope'
             
-            # 검색 수행 및 컨텍스트 포맷팅
-            context = self._retrieve_and_format(query)
+            logger.info(f"📍 분류: {query_type} "
+                f"(신뢰도: {classification['confidence']:.2f})")
             
-            # GGUF 모델로 생성
-            logger.info("GGUF 모델로 답변 생성 중...")
+            # 2. 타입별 처리
+            if query_type in ['greeting', 'thanks', 'out_of_scope']:
+                # 검색 스킵
+                context = None
+                used_retrieval = False
+                self._last_retrieved_docs = []
+                
+                # 동적 프롬프트 선택
+                system_prompt = PromptManager.get_prompt(query_type)
+                logger.info(f"⏭️ RAG 스킵: {query_type}")
+            
+            elif query_type == 'document':
+                # RAG 수행
+                context = self._retrieve_and_format(query)
+                used_retrieval = True
+                
+                # 동적 프롬프트 (context 포함)
+                system_prompt = PromptManager.get_prompt('document')
+                logger.info(f"🔍 RAG 수행: {len(self._last_retrieved_docs)}개 문서")
+            
+            # 3. 답변 생성 (system_prompt 전달)
             answer = self.generator.chat(
                 question=query,
-                context=context
+                context=context,
+                system_prompt=system_prompt  # ← 추가!
             )
             
             elapsed_time = time.time() - start_time
@@ -431,7 +468,10 @@ class GGUFRAGPipeline:
             return {
                 'answer': answer,
                 'sources': self._format_sources(self._last_retrieved_docs),
-                'search_mode': self.search_mode,
+                'used_retrieval': used_retrieval,
+                'query_type': query_type,  # ← 추가!
+                'search_mode': self.search_mode if used_retrieval else 'direct',
+                'routing_info': classification,
                 'elapsed_time': elapsed_time,
                 'usage': self._estimate_usage(query, answer)
             }
@@ -485,17 +525,24 @@ if __name__ == "__main__":
     # GGUFRAGPipeline 초기화
     pipeline = GGUFRAGPipeline(config=config)
     
-    # 테스트 질문
-    test_question = "본 사업의 예산 범위와 수행기간은 어떻게 되나요?"
+    # 테스트 질문들
+    test_questions = [
+        "안녕하세요",
+        "본 사업의 예산 범위는 어떻게 되나요?",
+        "고마워요!"
+    ]
     
-    print("\n" + "="*50)
-    print("테스트 질문:", test_question)
-    print("="*50)
-    
-    result = pipeline.generate_answer(test_question)
-    
-    print("\n응답:")
-    print(result['answer'])
-    print(f"\n소요 시간: {result['elapsed_time']:.2f}초")
-    print(f"참고 문서: {len(result['sources'])}개")
-    print("="*50)
+    for question in test_questions:
+        print("\n" + "="*50)
+        print("테스트 질문:", question)
+        print("="*50)
+        
+        result = pipeline.generate_answer(question)
+        
+        print(f"\n라우팅: {result['routing_info']['route']}")
+        print(f"검색 사용: {result['used_retrieval']}")
+        print("\n응답:")
+        print(result['answer'])
+        print(f"\n소요 시간: {result['elapsed_time']:.2f}초")
+        print(f"참고 문서: {len(result['sources'])}개")
+        print("="*50)
