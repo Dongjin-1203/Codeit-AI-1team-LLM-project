@@ -132,19 +132,12 @@ if 'show_routing_info' not in st.session_state:
 # ===== RAG 파이프라인 초기화 =====
 @st.cache_resource
 def initialize_rag(model_type):
-    """RAG 파이프라인 초기화 (모델 타입에 따라 분기)"""
+    """RAG 파이프라인 초기화 (API 모델 전용)"""
     try:
         config = RAGConfig()
-        
-        if model_type == "API 모델 (GPT)":
-            from src.generator.generator import RAGPipeline
-            rag = RAGPipeline(config=config)
-            return rag, None, "API"
-        
-        else:  # "로컬 모델 (GGUF)"
-            from src.generator.generator_gguf import GGUFRAGPipeline
-            rag = GGUFRAGPipeline(config=config)
-            return rag, None, "Local-GGUF"
+        from src.generator.generator import RAGPipeline
+        rag = RAGPipeline(config=config)
+        return rag, None, "API"
             
     except Exception as e:
         return None, str(e), None
@@ -306,21 +299,14 @@ def main():
         model_type = st.selectbox(
             "생성 모델 선택",
             options=[
-                "API 모델 (GPT)",
-                "로컬 모델 (GGUF)"  
+                "API 모델 (GPT)"
             ],
-            index=1,  # 기본값을 GGUF로 (Router 있음)
-            help="""
-            • API 모델: OpenAI API 사용 (빠르고 안정적)
-            • 로컬 모델 (GGUF): Query Router 포함, 메모리 효율적
-            """
+            index=0,
+            help="OpenAI API 사용 (빠르고 안정적)"
         )
         
         # 모델 정보 표시
-        if model_type == "API 모델 (GPT)":
-            st.info("🌐 OpenAI GPT 모델 사용 중")
-        else:  # GGUF
-            st.success("⚡ 로컬 GGUF + Query Router 사용 중")
+        st.info("🌐 OpenAI GPT 모델 사용 중")
         
         st.markdown("---")
         
@@ -358,8 +344,8 @@ def main():
             "검색할 문서 개수 (Top-K)",
             min_value=1,
             max_value=20,
-            value=7,  # 기본값 조정 (Router로 불필요한 검색 줄어듦)
-            help="Router가 검색이 필요한 경우에만 사용됨"
+            value=10,  # 기본값
+            help="검색할 문서 개수"
         )
         
         alpha = st.slider(
@@ -443,21 +429,15 @@ def main():
 python main.py --step embed
 ```
                 
-                2. OpenAI API 키가 설정되었는지 확인 (API 모델 사용 시):
+                2. OpenAI API 키가 설정되었는지 확인:
 ```bash
 # .env 파일
 OPENAI_API_KEY=your-key-here
 ```
                 
-                3. GGUF 모델 파일 확인 (로컬 모델 사용 시):
+                3. 필요한 패키지 설치:
 ```bash
-# config.py
-GGUF_MODEL_PATH = "./models/your-model.gguf"
-```
-                
-                4. 필요한 패키지 설치:
-```bash
-pip install rank-bm25 sentence-transformers llama-cpp-python
+pip install rank-bm25 sentence-transformers
 ```
                 """)
                 return
@@ -473,11 +453,7 @@ pip install rank-bm25 sentence-transformers llama-cpp-python
         st.info("""
         ### 👋 환영합니다!
         
-        공공기관 사업제안서에 대해 질문해보세요. 
-        
-        **Router가 자동으로 판단합니다:**
-        - 📚 문서 검색이 필요한 질문 → RAG 수행
-        - 💬 일반 대화/인사 → 직접 답변
+        공공기관 사업제안서에 대해 질문해보세요.
         
         **예시 질문:**
         - "안녕하세요" (검색 안 함)
