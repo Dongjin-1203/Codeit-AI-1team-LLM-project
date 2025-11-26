@@ -1,3 +1,14 @@
+---
+title: RFPilot                # 괄호 제거
+emoji: 📄
+colorFrom: blue
+colorTo: green
+sdk: docker                   # Docker 사용
+app_port: 7860                # Streamlit 포트
+pinned: false
+license: mit
+---
+
 # Codeit-AI-1team-LLM-project
 ---
 ## 챗봇 서비스 시연
