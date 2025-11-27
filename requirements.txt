@@ -1,6 +1,6 @@
 # ===== LangChain 생태계 =====
 langchain==0.2.11
-langchain-core==0.2.23
+langchain-core==0.2.27
 langchain-text-splitters==0.2.2
 langchain-openai==0.1.20
 langchain-chroma==0.1.2
@@ -49,6 +49,6 @@ python-dotenv==1.0.1
 
 # ===== 평가 & 모니터링 (선택) =====
 ragas==0.1.20
-langsmith==0.1.117
+langsmith==0.1.85
 wandb==0.16.6
 datasets==2.20.0
