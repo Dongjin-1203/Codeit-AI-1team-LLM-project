@@ -9,6 +9,7 @@ from typing import List, Dict
 
 from src.utils.config import RAGConfig
 from src.retriever.retriever import RAGRetriever
+from src.router.query_router import QueryRouter
 
 
 class RAGPipeline:
@@ -32,8 +33,14 @@ class RAGPipeline:
             max_retries=3
         )
 
-        # Retriever 초기화
+        # Retriever 및 라우터 초기화
         self.retriever = RAGRetriever(config=self.config)
+        self.router = QueryRouter()
+        self._direct_responses = {
+            'greeting': "안녕하세요! 공공입찰 RFP 관련 궁금한 사항을 알려주시면 자료를 찾아 드릴게요.",
+            'thanks': "도움이 되었다니 다행입니다. 추가로 궁금한 점이 있으면 언제든지 말씀해 주세요!",
+            'out_of_scope': "해당 질문은 현재 보유한 입찰·사업 문서에서 다루지 않습니다. 다른 질문을 시도해 주세요."
+        }
         
         # 대화 히스토리
         self.chat_history: List[Dict] = []
@@ -48,10 +55,10 @@ class RAGPipeline:
             # 규칙
             - 답변은 한국어로 작성합니다.
             - 컨텍스트 밖 내용을 추측하지 않습니다.
-            - 정보가 없으면 "문서에서 해당 정보를 찾을 수 없습니다."라고 밝힙니다.
+            - 컨텍스트가 비어있거나 질문과 직접 관련된 사실이 없으면 "문서에서 해당 정보를 찾을 수 없습니다." 한 문장으로만 답합니다.
             - 여러 문서를 비교할 때는 문서별 차이를 표 또는 목록으로 정리합니다.
             - 숫자에는 가능한 단위를 포함합니다.
-            - 직전 대화 맥락을 반영합니다.
+            - 직전 대화 맥락을 반영하되, 확인되지 않은 내용을 추론해 추가하지 않습니다.
 
             # 답변 형식
             1. 한 줄 요약: 질문 핵심을 한두 문장으로 작성합니다.
@@ -182,7 +189,36 @@ class RAGPipeline:
         """
         try:
             start_time = time.time()
-            
+
+            classification = self.router.classify(query)
+            query_type = classification.get('type', 'document')
+
+            # 비문서 질의는 즉시 응답
+            if query_type != 'document':
+                print(f"⏭️  라우터: 검색 생략 ({query_type})")
+                answer = self._direct_responses.get(
+                    query_type,
+                    self._direct_responses['out_of_scope']
+                )
+                elapsed_time = time.time() - start_time
+                self._last_retrieved_docs = []
+
+                self.chat_history.append({"role": "user", "content": query})
+                self.chat_history.append({"role": "assistant", "content": answer})
+
+                return {
+                    'answer': answer,
+                    'sources': [],
+                    'search_mode': 'none',
+                    'elapsed_time': elapsed_time,
+                    'usage': {
+                        'total_tokens': 0,
+                        'prompt_tokens': 0,
+                        'completion_tokens': 0
+                    },
+                    'routing': classification
+                }
+
             # 파라미터 설정
             if top_k is not None:
                 self.top_k = top_k
@@ -193,6 +229,11 @@ class RAGPipeline:
             
             # Chain 실행
             answer = self.chain.invoke(query)
+            
+            # 검색 결과가 없으면 안전 응답으로 대체
+            if not self._last_retrieved_docs:
+                answer = "문서에서 관련 정보를 찾을 수 없습니다. 다른 질문을 입력해 주세요."
+                print("⚠️  검색 결과 없음 - 안전 응답 반환")
             
             elapsed_time = time.time() - start_time
             
@@ -212,7 +253,8 @@ class RAGPipeline:
                     'total_tokens': estimated_tokens,
                     'prompt_tokens': 0,
                     'completion_tokens': 0
-                }
+                },
+                'routing': classification
             }
         
         except Exception as e:
