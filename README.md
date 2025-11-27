@@ -182,7 +182,8 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 |프로젝트 전체 기획 및 일정 관리. Retrieval System 설계 및 구현 (Retriever, Query Router). 로컬 임베딩 모델 개발 및 최적화. 동적 프롬프트 엔지니어링 및 적용. Streamlit 기반 대시보드 개발. 배포 환경 구축 및 시스템 통합|데이터 파이프라인 관리. 문서 청킹 전략 계획 수립. 모델 Baseline 제공. 모델 양자화|- OpenAI 모델 개발. Prompt Engineering 담당|- 로컬 임베딩 모델 개발. Prompt Engineering 담당|
 ---
 # 5. 프로젝트 타임라인
-<img width="1580" height="807" alt="image" src="https://github.com/user-attachments/assets/57f6346a-663f-4ddd-a4b6-fafc2074ff71" />
+<img width="1125" height="705" alt="image" src="https://github.com/user-attachments/assets/c06be17f-b82a-4ebc-87a3-45b23a42b5d1" />
+
 
 
 ---
