@@ -23,12 +23,15 @@ openpyxl>=3.0.0,<4.0.0
 
 # ===== 검색 & 임베딩 =====
 rank-bm25>=0.2.2
+torch>=2.0.0,<3.0.0
+transformers>=4.30.0,<5.0.0
 sentence-transformers>=2.2.0,<4.0.0
 FlagEmbedding>=1.2.0,<2.0.0
 rapidfuzz>=3.0.0,<4.0.0
 
-# ===== GGUF 모델 지원 (CPU 버전) =====
-# llama-cpp-python>=0.2.0,<0.4.0
+# ===== GGUF 모델 지원 =====
+# llama-cpp-python은 Dockerfile에서 별도 설치
+# 로컬 모델 사용 안 함 (API만 사용)
 
 # ===== Hugging Face Hub =====
 huggingface-hub>=0.20.0
