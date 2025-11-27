@@ -1,54 +1,46 @@
-# ===== LangChain 생태계 =====
-langchain==0.2.11
-langchain-core==0.2.27
-langchain-text-splitters==0.2.2
-langchain-openai==0.1.20
-langchain-chroma==0.1.2
-langchain-community==0.2.10
+# ===== Python 3.12 Dockerfile =====
+FROM python:3.12-slim
 
-# ===== OpenAI API =====
-openai==1.35.13
+# 시스템 패키지 설치
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# ===== 벡터 DB =====
-chromadb==0.4.24
+# 작업 디렉토리
+WORKDIR /app
 
-# ===== 문서 처리 =====
-pypdf==4.3.1
-olefile==0.47
+# ===== 환경변수 설정 =====
+ENV HOME=/app
+ENV STREAMLIT_SERVER_FILE_WATCHER_TYPE=none
+ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+ENV HF_HOME=/app/.cache/huggingface
+ENV HF_HUB_CACHE=/app/.cache/huggingface/hub
+ENV HUGGINGFACE_HUB_CACHE=/app/.cache/huggingface/hub
+ENV OMP_NUM_THREADS=1
+ENV MKL_NUM_THREADS=1
+ENV NUMEXPR_NUM_THREADS=1
 
-# ===== 데이터 처리 =====
-pandas==2.2.2
-numpy==1.26.4
-openpyxl==3.1.5
+# 캐시 디렉토리 생성 및 권한 설정
+RUN mkdir -p /app/.cache/huggingface /app/.streamlit && \
+    chmod -R 777 /app/.cache /app/.streamlit
 
-# ===== 검색 & 임베딩 =====
-rank-bm25==0.2.2
-torch==2.2.0
-transformers==4.38.2
-sentence-transformers==2.7.0
-rapidfuzz==3.9.7
+# 의존성 복사
+COPY requirements.txt .
 
-# ===== GGUF 모델 지원 =====
-# llama-cpp-python은 Dockerfile에서 별도 설치
-# 로컬 모델 사용 안 함 (API만 사용)
+# pip 업그레이드 & 의존성 설치
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
-# ===== Hugging Face Hub =====
-huggingface-hub==0.24.6
+# 프로젝트 파일 복사
+COPY . .
 
-# ===== Streamlit UI =====
-streamlit==1.38.0
-plotly==5.23.0
+# Streamlit 포트
+EXPOSE 7860
 
-# ===== 머신러닝 유틸 =====
-scikit-learn==1.5.1
-matplotlib==3.9.2
-
-# ===== 유틸리티 =====
-tqdm==4.66.5
-python-dotenv==1.0.1
-
-# ===== 평가 & 모니터링 (선택) =====
-ragas==0.1.20
-langsmith==0.1.85
-wandb==0.16.6
-datasets==2.20.0
+# 실행
+CMD ["streamlit", "run", "src/visualization/chatbot_app.py", \
+     "--server.port=7860", \
+     "--server.address=0.0.0.0", \
+     "--server.headless=true", \
+     "--server.fileWatcherType=none"]

@@ -1,5 +1,5 @@
-# ===== API-Only Dockerfile (Fixed) =====
-FROM python:3.10-slim
+# ===== Python 3.12 Dockerfile =====
+FROM python:3.12-slim
 
 # 시스템 패키지 설치
 RUN apt-get update && apt-get install -y \
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 # 작업 디렉토리
 WORKDIR /app
 
-# ===== 환경변수 설정 (권한 문제 해결) =====
+# ===== 환경변수 설정 =====
 ENV HOME=/app
 ENV STREAMLIT_SERVER_FILE_WATCHER_TYPE=none
 ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
