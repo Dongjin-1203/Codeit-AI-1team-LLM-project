@@ -47,7 +47,7 @@ license: mit
 - Python 3.12.3 설치
 - Poetry 설치
 - 저장소 클론 완료
-- 데이터셋 로컬 저장 ([다운로드 링크](#))
+- 데이터셋 로컬 저장 ([다운로드 링크](https://drive.google.com/file/d/187QnN2VeCfa-nyFMcv8ZtBJP0JxTaY4U/view?usp=drive_link))
 - (선택) 양자화 모델 파일(.gguf) 저장 (GPT API만 사용 시 불필요)
 
 ### 환경 설정
