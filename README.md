@@ -189,7 +189,7 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 # 6. 서비스 설명
 
 ## 서비스 아키텍쳐
-<img width="4208" height="2004" alt="image" src="https://github.com/user-attachments/assets/73a0db09-b858-4b69-b93b-a85f928225a9" />
+<img width="4208" height="2004" alt="image" src="https://github.com/user-attachments/assets/6fd35353-7d88-464f-8d75-ff33fabc206b" />
 
 ---
 # Further Information
