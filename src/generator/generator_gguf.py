@@ -1,4 +1,4 @@
-from llama_cpp import Llama
+from llama_cpp import Llama  # ← 주석 해제!
 from typing import Optional, Dict, Any, List
 import logging
 import time
@@ -152,7 +152,7 @@ class GGUFGenerator:
             logger.warning("⚠️ system_prompt가 None! 기본 프롬프트 사용")
         else:
             # 동적 프롬프트 미리보기 (처음 150자만)
-            logger.info(f"✅ 동적 프롬프트 적용:\n{system_prompt[:150]}...")  # ← 추가
+            logger.info(f"✅ 동적 프롬프트 적용:\n{system_prompt[:150]}...")
             
         # 컨텍스트 포함 여부
         if context is not None:
@@ -246,92 +246,86 @@ class GGUFGenerator:
         
         Args:
             question: 사용자 질문
-            context: 선택적 컨텍스트 (RAG 결과)
-            **kwargs: generate() 파라미터
+            context: 선택적 컨텍스트
+            system_prompt: 선택적 시스템 프롬프트
+            **kwargs: generate() 메서드에 전달될 추가 파라미터
         
         Returns:
             생성된 응답
         """
-        # 프롬프트 포맷팅 (system_prompt 전달)
-        formatted_prompt = self.format_prompt(
+        # 프롬프트 포맷팅
+        prompt = self.format_prompt(
             question=question,
             context=context,
-            system_prompt=system_prompt  # ← 추가!
+            system_prompt=system_prompt
         )
         
         # 응답 생성
-        response = self.generate(formatted_prompt, **kwargs)
-
+        response = self.generate(prompt, **kwargs)
+        
         return response
-    
-    def get_model_info(self) -> Dict[str, Any]:
-        """
-        모델 정보 반환
-        
-        Returns:
-            모델 정보 딕셔너리
-        """
-        info = {
-            "model_path": self.model_path,
-            "n_gpu_layers": self.n_gpu_layers,
-            "n_ctx": self.n_ctx,
-            "n_threads": self.n_threads,
-            "is_loaded": self.model is not None,
-            "max_new_tokens": self.max_new_tokens,
-            "temperature": self.temperature,
-            "top_p": self.top_p,
-        }
-        
-        return info
-    
-    def __repr__(self):
-        return f"GGUFGenerator(model={self.model_path}, loaded={self.model is not None})"
 
-
-# ===== GGUF RAGPipeline: chatbot_app.py 호환용 =====
 
 class GGUFRAGPipeline:
     """
-    GGUF 모델 기반 RAG 파이프라인
+    GGUF 생성기 + RAG 통합 파이프라인
     
-    RAGPipeline(API 버전)과 동일한 인터페이스를 제공하여
-    chatbot_app.py와 호환됩니다.
+    chatbot_app.py와 호환되는 인터페이스 제공
     """
     
-    def __init__(self, config=None, model: str = None, top_k: int = None):
+    def __init__(
+        self,
+        config: RAGConfig = None,
+        model: str = None,  # 호환성용 (사용 안 함)
+        top_k: int = 10,
+        n_gpu_layers: int = 0,  # GPU 레이어 수
+        n_ctx: int = 2048,
+        n_threads: int = 8,
+        max_new_tokens: int = 256,
+        temperature: float = 0.7,
+        top_p: float = 0.9,
+        search_mode: str = "hybrid_rerank",
+        alpha: float = 0.5
+    ):
         """
         초기화
         
         Args:
-            config: RAGConfig 객체
-            model: 모델 이름 (사용 안 함, 호환성용)
-            top_k: 기본 검색 문서 수
+            config: RAGConfig 인스턴스
+            n_gpu_layers: GPU 레이어 수
+            n_ctx: 컨텍스트 길이
+            n_threads: CPU 스레드 수
+            max_new_tokens: 최대 생성 토큰
+            temperature: 생성 다양성
+            top_p: Nucleus sampling
+            search_mode: 검색 모드
+            top_k: 검색할 문서 수
+            alpha: 임베딩 가중치
         """
-        # Config import (지연 import로 순환 참조 방지)
-        from src.utils.config import RAGConfig
-        from src.retriever.retriever import RAGRetriever
-        
         self.config = config or RAGConfig()
-        self.top_k = top_k or self.config.DEFAULT_TOP_K
-        
-        # 검색 설정
-        self.search_mode = self.config.DEFAULT_SEARCH_MODE
-        self.alpha = self.config.DEFAULT_ALPHA
+        self.search_mode = search_mode
+        self.top_k = top_k
+        self.alpha = alpha
         
         # Retriever 초기화
-        logger.info("RAGRetriever 초기화 중...")
-        self.retriever = RAGRetriever(config=self.config)
+        from src.retriever.hybrid_retriever import HybridRetriever
+        self.retriever = HybridRetriever(
+            collection_name=self.config.COLLECTION_NAME,
+            persist_directory=self.config.CHROMA_DB_DIR,
+            embedding_model_name=self.config.EMBEDDING_MODEL,
+            reranker_model_name=self.config.RERANKER_MODEL
+        )
         
-        # GGUFGenerator 초기화
-        logger.info("GGUFGenerator 초기화 중...")
+        # Generator 초기화
         self.generator = GGUFGenerator(
             model_path=self.config.GGUF_MODEL_PATH,
-            n_gpu_layers=self.config.GGUF_N_GPU_LAYERS,
-            n_ctx=self.config.GGUF_N_CTX,
-            n_threads=self.config.GGUF_N_THREADS,
-            max_new_tokens=self.config.GGUF_MAX_NEW_TOKENS,
-            temperature=self.config.GGUF_TEMPERATURE,
-            top_p=self.config.GGUF_TOP_P,
+            n_gpu_layers=n_gpu_layers,
+            n_ctx=n_ctx,
+            n_threads=n_threads,
+            config=self.config,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_p=top_p,
             system_prompt=self.config.SYSTEM_PROMPT
         )
         
@@ -487,7 +481,7 @@ class GGUFRAGPipeline:
             answer = self.generator.chat(
                 question=query,
                 context=context,
-                system_prompt=system_prompt  # ← 추가!
+                system_prompt=system_prompt
             )
             
             elapsed_time = time.time() - start_time
@@ -501,7 +495,7 @@ class GGUFRAGPipeline:
                 'answer': answer,
                 'sources': self._format_sources(self._last_retrieved_docs),
                 'used_retrieval': used_retrieval,
-                'query_type': query_type,  # ← 추가!
+                'query_type': query_type,
                 'search_mode': self.search_mode if used_retrieval else 'direct',
                 'routing_info': classification,
                 'elapsed_time': elapsed_time,
