@@ -25,7 +25,7 @@ class GGUFGenerator:
         self,
         model_path: str,
         n_gpu_layers: int = 0,
-        n_ctx: int = 2048,
+        n_ctx: int = 8192,
         n_threads: int = 8,
         config = None,
         max_new_tokens: int = 256,

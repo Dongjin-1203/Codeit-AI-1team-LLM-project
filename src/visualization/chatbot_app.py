@@ -166,7 +166,7 @@ def initialize_rag(model_type):
             rag = GGUFRAGPipeline(
                 config=config,
                 n_gpu_layers=35,  # T4에서 전체 레이어 GPU 사용
-                n_ctx=4096,       # 컨텍스트 길이
+                n_ctx=8192,       # 컨텍스트 길이
                 n_threads=4,      # CPU 스레드 (GPU 사용 시 낮게)
                 max_new_tokens=512,  # 최대 생성 토큰
                 temperature=0.7,
