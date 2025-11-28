@@ -151,15 +151,6 @@ if 'available_models' not in st.session_state:
 if 'selected_gpt_model' not in st.session_state:
     st.session_state.selected_gpt_model = "gpt-4o-mini"
 
-if 'custom_db_path' not in st.session_state:
-    st.session_state.custom_db_path = None
-
-if 'db_uploaded' not in st.session_state:
-    st.session_state.db_uploaded = False
-
-if 'last_db_file' not in st.session_state:
-    st.session_state.last_db_file = None
-
 
 # ===== API 키로 사용 가능한 모델 조회 함수 =====
 def get_available_models(api_key: str) -> tuple:
@@ -297,130 +288,9 @@ def validate_api_key(api_key: str) -> tuple:
             return False, f"❌ API 키 검증 실패: {error_msg}", []
 
 
-# ===== 벡터 DB 업로드 및 검증 함수 =====
-def upload_and_extract_vectordb(uploaded_file):
-    """
-    업로드된 ZIP 파일을 압축 해제하고 ChromaDB 경로 반환
-    
-    Args:
-        uploaded_file: Streamlit UploadedFile 객체
-        
-    Returns:
-        Path: ChromaDB 경로 (chroma.sqlite3가 있는 폴더)
-        
-    Raises:
-        FileNotFoundError: chroma.sqlite3를 찾을 수 없는 경우
-    """
-    import zipfile
-    import tempfile
-    from pathlib import Path
-    
-    # 임시 폴더 생성
-    temp_dir = tempfile.mkdtemp(prefix="chroma_db_")
-    temp_path = Path(temp_dir)
-    
-    # ZIP 파일 저장
-    zip_path = temp_path / "uploaded.zip"
-    with open(zip_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    
-    # 압축 해제
-    extract_path = temp_path / "chromadb"
-    extract_path.mkdir(exist_ok=True)
-    
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_path)
-    
-    # chroma.sqlite3 찾기
-    # 경우 1: 루트에 있는 경우
-    if (extract_path / "chroma.sqlite3").exists():
-        return str(extract_path)
-    
-    # 경우 2: 하위 폴더에 있는 경우
-    for root in extract_path.rglob("*"):
-        if root.is_dir():
-            if (root / "chroma.sqlite3").exists():
-                return str(root)
-    
-    # 찾지 못한 경우
-    raise FileNotFoundError(
-        "chroma.sqlite3를 찾을 수 없습니다. "
-        "올바른 ChromaDB 폴더를 압축했는지 확인하세요."
-    )
-
-
-def get_vectordb_info(db_path: str) -> dict:
-    """
-    벡터 DB 정보 조회 (chroma_parser.py의 ChromaDBParser 방식)
-    
-    Args:
-        db_path: ChromaDB 경로
-    
-    Returns:
-        정보 딕셔너리
-    """
-    try:
-        import chromadb
-        from pathlib import Path
-        
-        # ChromaDB 클라이언트 생성
-        client = chromadb.PersistentClient(path=str(Path(db_path)))
-        
-        # Collection 리스트 가져오기
-        collections = client.list_collections()
-        
-        if not collections:
-            return {
-                'doc_count': 0,
-                'metadata_keys': [],
-                'collection_name': 'N/A',
-                'error': 'Collection이 없습니다'
-            }
-        
-        # 첫 번째 Collection 사용
-        collection = collections[0]
-        collection_name = collection.name
-        
-        # 총 문서 수
-        count = collection.count()
-        
-        if count == 0:
-            return {
-                'doc_count': 0,
-                'metadata_keys': [],
-                'collection_name': collection_name
-            }
-        
-        # 샘플 데이터로 정보 확인
-        sample = collection.get(
-            limit=1,
-            include=['metadatas']
-        )
-        
-        # 메타데이터 키
-        metadata_keys = []
-        if sample.get('metadatas') and len(sample['metadatas']) > 0:
-            if sample['metadatas'][0]:
-                metadata_keys = list(sample['metadatas'][0].keys())
-        
-        return {
-            'doc_count': count,
-            'metadata_keys': metadata_keys,
-            'collection_name': collection_name
-        }
-        
-    except Exception as e:
-        return {
-            'doc_count': 0,
-            'metadata_keys': [],
-            'collection_name': 'N/A',
-            'error': str(e)
-        }
-
-
 # ===== RAG 파이프라인 초기화 =====
 @st.cache_resource
-def initialize_rag(model_type, _user_api_key=None, gpt_model_name=None, custom_db_path=None):
+def initialize_rag(model_type, _user_api_key=None, gpt_model_name=None):
     """
     RAG 파이프라인 초기화
     
@@ -428,7 +298,6 @@ def initialize_rag(model_type, _user_api_key=None, gpt_model_name=None, custom_d
         model_type: "API 모델 (GPT)" 또는 "로컬 모델 (GGUF)"
         _user_api_key: 사용자가 입력한 API 키 (None이면 .env 사용)
         gpt_model_name: 사용할 GPT 모델 이름 (예: "gpt-4o-mini")
-        custom_db_path: 사용자가 업로드한 벡터 DB 경로 (None이면 기본 경로)
     
     Returns:
         (rag_pipeline, error_message, model_name)
@@ -444,10 +313,6 @@ def initialize_rag(model_type, _user_api_key=None, gpt_model_name=None, custom_d
         # GPT 모델 이름 설정
         if gpt_model_name:
             config.LLM_MODEL_NAME = gpt_model_name
-        
-        # 커스텀 벡터 DB 경로 설정
-        if custom_db_path:
-            config.DB_DIRECTORY = custom_db_path
         
         if model_type == "API 모델 (GPT)":
             # API 모델 사용
@@ -739,147 +604,6 @@ def main():
         
         st.markdown("---")
         
-        # ===== 📊 벡터 DB 설정 =====
-        st.markdown("### 📊 벡터 DB 설정")
-        
-        # 현재 DB 상태 확인
-        has_server_db = os.path.exists(config.DB_DIRECTORY)
-        
-        if has_server_db:
-            st.success("✅ 서버 벡터 DB 사용 중")
-        else:
-            st.warning("⚠️ 서버 벡터 DB가 없습니다. 아래에 업로드하세요.")
-        
-        # 벡터 DB 업로드 옵션
-        use_custom_db = st.checkbox(
-            "📤 내 벡터 DB 업로드하기",
-            value=not has_server_db,
-            help="자신의 ChromaDB를 ZIP 파일로 업로드하여 사용합니다."
-        )
-        
-        if use_custom_db:
-            st.markdown("""
-            **업로드 방법:**
-            1. ChromaDB 폴더를 ZIP으로 압축
-            2. 아래에 업로드
-            
-            **필수 파일:**
-            - `chroma.sqlite3`
-            - Collection 폴더
-            """)
-            
-            uploaded_db = st.file_uploader(
-                "ChromaDB ZIP 파일 업로드",
-                type=['zip'],
-                help="chroma_db 폴더를 압축한 ZIP 파일을 업로드하세요",
-                key="vectordb_uploader"
-            )
-            
-            # 파일 업로드 처리
-            if uploaded_db is not None:
-                # 새 파일이거나 처음 업로드
-                if ('last_db_file' not in st.session_state or 
-                    st.session_state.last_db_file != uploaded_db.name):
-                    
-                    with st.spinner("📦 파일 처리 중..."):
-                        try:
-                            db_path = upload_and_extract_vectordb(uploaded_db)
-                            st.session_state.custom_db_path = db_path
-                            st.session_state.last_db_file = uploaded_db.name
-                            st.session_state.db_uploaded = True
-                            
-                            # RAG 파이프라인 재초기화 강제
-                            st.session_state.rag_pipeline = None
-                            st.session_state.model_type = None
-                            
-                            st.success("✅ 벡터 DB 업로드 완료!")
-                            
-                            # DB 정보 표시
-                            db_info = get_vectordb_info(db_path)
-                            
-                            if 'error' not in db_info:
-                                st.info(f"""
-                                📋 **DB 정보:**
-                                - 문서 수: {db_info['doc_count']:,}개
-                                - 컬렉션: {db_info['collection_name']}
-                                - 메타데이터: {', '.join(db_info['metadata_keys'][:5])}
-                                """)
-                            else:
-                                st.warning(f"⚠️ DB 정보 조회 실패: {db_info['error']}")
-                            
-                            st.info("💡 모델을 다시 선택하면 새 벡터 DB로 초기화됩니다.")
-                            
-                        except FileNotFoundError as e:
-                            st.error(str(e))
-                        except Exception as e:
-                            st.error(f"❌ 업로드 실패: {e}")
-                
-                else:
-                    # 이미 업로드된 파일
-                    st.success(f"✅ 업로드됨: {uploaded_db.name}")
-                    if st.session_state.custom_db_path:
-                        st.info(f"경로: {st.session_state.custom_db_path}")
-            
-            # 벡터 DB 생성 가이드
-            with st.expander("📖 벡터 DB 생성 방법"):
-                st.markdown("""
-                **1. 데이터 준비**
-                ```bash
-                # 문서 파일을 data/files/ 폴더에 저장
-                ```
-                
-                **2. 벡터 DB 생성**
-                ```bash
-                # 전체 파이프라인 실행
-                python main.py --step all
-                
-                # 또는 임베딩만
-                python main.py --step embed
-                ```
-                
-                **3. ZIP 압축**
-                ```bash
-                # Windows
-                Compress-Archive -Path chroma_db -DestinationPath chroma_db.zip
-                
-                # Mac/Linux
-                zip -r chroma_db.zip chroma_db/
-                ```
-                
-                **4. 업로드**
-                - 생성된 `chroma_db.zip` 파일을 위에서 업로드
-                """)
-        
-        else:
-            # 서버 DB 사용 중
-            if has_server_db:
-                st.info("ℹ️ 서버에 있는 벡터 DB를 사용합니다.")
-                
-                # 서버 DB 정보 표시
-                if st.button("🔍 DB 정보 보기", key="view_server_db"):
-                    with st.spinner("🔄 정보 조회 중..."):
-                        db_info = get_vectordb_info(config.DB_DIRECTORY)
-                        
-                        if 'error' in db_info:
-                            st.error(f"❌ 정보 조회 실패: {db_info['error']}")
-                        else:
-                            st.success(f"""
-                            📋 **서버 DB 정보:**
-                            - 문서 수: {db_info['doc_count']:,}개
-                            - 컬렉션: {db_info['collection_name']}
-                            - 메타데이터: {', '.join(db_info['metadata_keys'][:5])}
-                            """)
-            
-            # 사용자 DB 초기화
-            if st.session_state.custom_db_path:
-                st.session_state.custom_db_path = None
-                st.session_state.db_uploaded = False
-                st.session_state.last_db_file = None
-                st.session_state.rag_pipeline = None
-                st.session_state.model_type = None
-        
-        st.markdown("---")
-        
         # ===== 🤖 모델 설정 =====
         st.markdown("### 🤖 모델 설정")
         
@@ -1119,8 +843,7 @@ def main():
             rag, error, rag_type = initialize_rag(
                 model_type, 
                 _user_api_key=st.session_state.user_api_key,
-                gpt_model_name=selected_gpt_model,
-                custom_db_path=st.session_state.custom_db_path
+                gpt_model_name=selected_gpt_model
             )
             
             if error:
