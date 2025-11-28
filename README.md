@@ -218,7 +218,7 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 [프로젝트 보고서 다운](https://drive.google.com/file/d/1p3HHeugJmaiJP4AQpxZZEzAiAngtaHr8/view?usp=sharing)
 
 ### 프로젝트 ppt
-[프로젝트 ppt 다운]()
+[프로젝트 ppt 다운](https://drive.google.com/file/d/1QM88Ayztv5TNaxTXi0z1Xhy6ngHLLKUm/view?usp=sharing)
 
 ### 개인 협업 일지
 - 지동진([개인 협업일지](https://www.notion.so/2a2e8d29749a80fca2c7cdae7dfbf883?source=copy_link))
