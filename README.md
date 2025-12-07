@@ -196,21 +196,22 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 # Further Information
 
 ## 개발 스택 및 개발환경
-- **언어**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/e8035e3d-cadb-48f5-a4ac-3693faca01a7" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/0658c7ba-8039-4dc3-96a2-7c1308b2fafc" />
+- **언어**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/e8035e3d-cadb-48f5-a4ac-3693faca01a7" />
 
-- **프레임워크**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/e8814092-7e1e-4b22-8d77-e04fd2b26ae6" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/LangChain-ffffff?logo=langchain&logoColor=green" />
+- **ML/DL 프레임워크**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/a428cd24-c8a5-4296-b6da-22eb322afa49" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/a2009044-329d-4dde-b0dc-701122ff8149" />
 
-- **라이브러리**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/a428cd24-c8a5-4296-b6da-22eb322afa49" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/4325f1d3-d8ba-4bec-a746-4cad4993e925" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/a2009044-329d-4dde-b0dc-701122ff8149" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/f6225115-0b60-439e-8388-974a0365f8d6" /> 
-- **클라우드 서비스**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/Google%20Cloud-4285F4?&style=plastic&logo=Google%20Cloud&logoColor=white" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/a2009044-329d-4dde-b0dc-701122ff8149" />
-- **도구**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/52f296c1-c878-4285-abe6-74842522e793" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/4ac10441-0753-4e94-9237-1ea6dc2034a2" /><img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/fea30130-c47c-4fa7-b3cb-7531481cfb28" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/google_drive-white?style=for-the-badge&logo=google%20drive&logoColor=white&color=%23EA4336" /><img width="71" height="18" alt="image" src="https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white" />
+- **웹 프레임워크**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/e8814092-7e1e-4b22-8d77-e04fd2b26ae6" />
 
+- **AI/LLM 라이브러리**:  <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/4325f1d3-d8ba-4bec-a746-4cad4993e925" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/LangChain-ffffff?logo=langchain&logoColor=green" />
+
+- **데이터 베이스**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/f6225115-0b60-439e-8388-974a0365f8d6" />
+
+- **클라우드, 배포**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/Google%20Cloud-4285F4?&style=plastic&logo=Google%20Cloud&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white" />
+
+- **개발 도구**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/52f296c1-c878-4285-abe6-74842522e793" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/4ac10441-0753-4e94-9237-1ea6dc2034a2" />
 
 ## 협업 Tools
-<img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/2bc2fa93-b01e-4051-9b31-ab83301594df" />
-<img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/6c44ddad-80a4-4098-9727-6dae9a8fcb1c" />
-<img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/a85b2d0f-8cdc-43e7-8e14-da11708a33a4" />
-<img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/28d7f511-a4fe-4aa5-9184-2d3a94a97f29" />
-<img width="71" height="18" alt="image" src="https://img.shields.io/badge/weightsandbiases-%23FFBE00?style=for-the-badge&logo=wandb-%23FFBE00&logoColor=%23FFBE00" />
+<img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/2bc2fa93-b01e-4051-9b31-ab83301594df" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/fea30130-c47c-4fa7-b3cb-7531481cfb28" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/google_drive-white?style=for-the-badge&logo=google%20drive&logoColor=white&color=%23EA4336" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/weightsandbiases-%23FFBE00?style=for-the-badge&logo=wandb-%23FFBE00&logoColor=%23FFBE00" />
 
 ## 기타 링크
 
