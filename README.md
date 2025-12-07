@@ -222,7 +222,7 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 [프로젝트 ppt 다운](https://drive.google.com/file/d/1QM88Ayztv5TNaxTXi0z1Xhy6ngHLLKUm/view?usp=sharing)
 
 ### 개인 협업 일지
-- 지동진([개인 협업일지](https://www.notion.so/2a2e8d29749a80faa726fc13b879720d?v=2a2e8d29749a8039a20c000cae9478e5&source=copy_link))
+- 지동진([개인 협업일지](https://www.notion.so/2a2e8d29749a80faa726fc13b879720d?v=2a2e8d29749a8039a20c000cae9478e5&source=copy_link)) ([프로젝트 회고](https://velog.io/@hambur1203/%EB%B6%80%ED%8A%B8%EC%BA%A0%ED%94%84-3%EC%A3%BC-RAG-%EC%B1%97%EB%B4%87-%EA%B0%9C%EB%B0%9C-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%ED%9A%8C%EA%B3%A0-%EC%B4%88%EC%8B%AC%EC%9D%B4-%EC%A4%91%EC%9A%94%ED%95%98%EB%8B%A4))
 - 김진욱([개인 협업일지](https://www.notion.so/2a2e8d29749a812b96d9d8a847323ad6?v=2a2e8d29749a815c9ca9000ce4ad6200&source=copy_link))
 - 이유노([개인 협업일지](https://www.notion.so/2a2e8d29749a81dea0b5dec22b9d1663?v=2a2e8d29749a81958e51000c6e22563c&source=copy_link))
 - 박지윤([개인 협업일지](https://www.notion.so/2a2e8d29749a8186aff7e0c80534f18f?v=2a2e8d29749a81f18943000c12559785&source=copy_link))
