@@ -196,22 +196,22 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 # Further Information
 
 ## 개발 스택 및 개발환경
-- **언어**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/e8035e3d-cadb-48f5-a4ac-3693faca01a7" />
+- **언어**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54" />
 
-- **ML/DL 프레임워크**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/a428cd24-c8a5-4296-b6da-22eb322afa49" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/a2009044-329d-4dde-b0dc-701122ff8149" />
+- **ML/DL 프레임워크**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/huggingface-%23FFD21E.svg?style=for-the-badge&logo=huggingface&logoColor=white" />
 
-- **웹 프레임워크**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/e8814092-7e1e-4b22-8d77-e04fd2b26ae6" />
+- **웹 프레임워크**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/Streamlit-%23FE4B4B.svg?style=for-the-badge&logo=streamlit&logoColor=white" />
 
-- **AI/LLM 라이브러리**:  <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/4325f1d3-d8ba-4bec-a746-4cad4993e925" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/LangChain-ffffff?logo=langchain&logoColor=green" />
+- **AI/LLM 라이브러리**:  <img width="71" height="18" alt="image" src="https://img.shields.io/badge/-OpenAI%20API-eee?style=flat-square&logo=openai&logoColor=412991" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/LangChain-ffffff?logo=langchain&logoColor=green" />
 
-- **데이터 베이스**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/f6225115-0b60-439e-8388-974a0365f8d6" />
+- **데이터 베이스**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/ChromaDB-Vector%20Database-orange" />
 
-- **클라우드, 배포**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/Google%20Cloud-4285F4?&style=plastic&logo=Google%20Cloud&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white" />
+- **클라우드, 배포**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/huggingface_space-yellow?logo=huggingface" /> 
 
-- **개발 도구**: <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/52f296c1-c878-4285-abe6-74842522e793" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/4ac10441-0753-4e94-9237-1ea6dc2034a2" />
+- **개발 도구**: <img width="71" height="18" alt="image" src="https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/jupyter-%23FA0F00.svg?style=for-the-badge&logo=jupyter&logoColor=white" />
 
 ## 협업 Tools
-<img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/2bc2fa93-b01e-4051-9b31-ab83301594df" /> <img width="71" height="18" alt="image" src="https://github.com/user-attachments/assets/fea30130-c47c-4fa7-b3cb-7531481cfb28" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/google_drive-white?style=for-the-badge&logo=google%20drive&logoColor=white&color=%23EA4336" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/weightsandbiases-%23FFBE00?style=for-the-badge&logo=wandb-%23FFBE00&logoColor=%23FFBE00" />
+<img width="71" height="18" alt="image" src="https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/Google%20Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white" /> <img width="71" height="18" alt="image" src="https://img.shields.io/badge/weightsandbiases-%23FFBE00?style=for-the-badge&logo=wandb-%23FFBE00&logoColor=%23FFBE00" />
 
 ## 기타 링크
 
