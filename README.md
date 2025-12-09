@@ -215,6 +215,9 @@ CODEIT-AI-1TEAM-LLM-PROJECT/
 
 ## 기타 링크
 
+### 프로젝트 후속 연구
+[GitHub Repository](https://github.com/Dongjin-1203/QLoRA_RAG_test)
+
 ### 프로젝트 보고서
 [프로젝트 보고서 다운](https://drive.google.com/file/d/1p3HHeugJmaiJP4AQpxZZEzAiAngtaHr8/view?usp=sharing)
 
