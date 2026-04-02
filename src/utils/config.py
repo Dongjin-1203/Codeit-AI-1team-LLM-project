@@ -10,7 +10,7 @@ class Config:
         load_dotenv()
         
         # ===== API 키 =====
-        self.OPENAI_API_KEY = self._get_api_key()
+        self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
         
         # ===== 경로 설정 =====
         # 전처리
@@ -80,17 +80,14 @@ class Config:
         self.GGUF_TEMPERATURE = float(os.getenv("GGUF_TEMPERATURE", "0.7"))       # 생성 다양성
         self.GGUF_TOP_P = float(os.getenv("GGUF_TOP_P", "0.9"))                   # Nucleus sampling
 
-    def _get_api_key(self) -> str:
-        """환경변수에서 API 키 로드"""
-        api_key = os.getenv("OPENAI_API_KEY")
-        
-        if not api_key:
+    def validate_for_rag(self):
+        """RAG 서빙 전 API 키 검증 — 임베딩·생성 단계 진입 전 명시적으로 호출"""
+        if not self.OPENAI_API_KEY:
             raise ValueError(
                 "OPENAI_API_KEY가 설정되지 않았습니다.\n"
                 "프로젝트 루트에 .env 파일을 만들고 OPENAI_API_KEY=your-key 를 추가하세요."
             )
-        
-        return api_key
+        return True
 
     def validate_preprocess(self):
         """전처리 설정 유효성 검사"""
