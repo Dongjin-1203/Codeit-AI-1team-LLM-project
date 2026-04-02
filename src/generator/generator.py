@@ -44,9 +44,6 @@ class RAGPipeline:
         
         # 대화 히스토리
         self.chat_history: List[Dict] = []
-        
-        # 마지막 검색 결과 저장 (sources 반환용)
-        self._last_retrieved_docs = []
 
         # 프롬프트 템플릿 (대화 히스토리 포함)
         self.prompt = ChatPromptTemplate.from_messages([
@@ -82,7 +79,7 @@ class RAGPipeline:
         # Chain 구성
         self.chain = (
             {
-                "context": RunnableLambda(self._retrieve_and_format),
+                "context": RunnableLambda(lambda q: self._retrieve_and_format(q)[0]),
                 "question": RunnablePassthrough(),
                 "chat_history": RunnableLambda(lambda x: self._get_chat_history())
             }
@@ -106,9 +103,8 @@ class RAGPipeline:
                 messages.append(AIMessage(content=msg["content"]))
         return messages
 
-    def _retrieve_and_format(self, query: str) -> str:
-        """검색 수행 및 컨텍스트 포맷팅"""
-        # 검색 모드에 따라 문서 검색
+    def _retrieve_and_format(self, query: str) -> tuple:
+        """검색 수행 및 컨텍스트 포맷팅. (context_str, docs) 튜플 반환"""
         if self.search_mode == "embedding":
             docs = self.retriever.search(query, top_k=self.top_k)
         elif self.search_mode == "hybrid":
@@ -119,12 +115,8 @@ class RAGPipeline:
             )
         else:
             docs = self.retriever.search(query, top_k=self.top_k)
-        
-        # 마지막 검색 결과 저장
-        self._last_retrieved_docs = docs
-        
-        # 컨텍스트 포맷팅
-        return self._format_context(docs)
+
+        return self._format_context(docs), docs
 
     def _format_context(self, retrieved_docs: list) -> str:
         """검색된 문서를 컨텍스트로 변환"""
@@ -133,7 +125,10 @@ class RAGPipeline:
         
         context_parts = []
         for i, doc in enumerate(retrieved_docs, 1):
-            context_parts.append(f"[문서 {i}]\n{doc['content']}\n")
+            filename = doc.get('filename', 'N/A')
+            organization = doc.get('organization', 'N/A')
+            header = f"[문서 {i}] 파일명: {filename} | 발주기관: {organization}"
+            context_parts.append(f"{header}\n{doc['content']}\n")
         return "\n".join(context_parts)
 
     def _format_sources(self, retrieved_docs: list) -> list:
@@ -201,7 +196,6 @@ class RAGPipeline:
                     self._direct_responses['out_of_scope']
                 )
                 elapsed_time = time.time() - start_time
-                self._last_retrieved_docs = []
 
                 self.chat_history.append({"role": "user", "content": query})
                 self.chat_history.append({"role": "assistant", "content": answer})
@@ -227,32 +221,37 @@ class RAGPipeline:
             if alpha is not None:
                 self.alpha = alpha
             
-            # Chain 실행
-            answer = self.chain.invoke(query)
-            
+            # 검색 수행
+            context, retrieved_docs = self._retrieve_and_format(query)
+
             # 검색 결과가 없으면 안전 응답으로 대체
-            if not self._last_retrieved_docs:
+            if not retrieved_docs:
                 answer = "문서에서 관련 정보를 찾을 수 없습니다. 다른 질문을 입력해 주세요."
                 print("⚠️  검색 결과 없음 - 안전 응답 반환")
-            
+            else:
+                prompt_value = self.prompt.invoke({
+                    "context": context,
+                    "question": query,
+                    "chat_history": self._get_chat_history()
+                })
+                answer = StrOutputParser().invoke(self.llm.invoke(prompt_value))
+
             elapsed_time = time.time() - start_time
-            
+
             # 대화 히스토리에 추가
             self.chat_history.append({"role": "user", "content": query})
             self.chat_history.append({"role": "assistant", "content": answer})
-            
-            # 토큰 사용량 추정 (LangChain에서는 직접 접근 어려움)
-            estimated_tokens = len(query.split()) + len(answer.split()) * 2
-            
+
             return {
                 'answer': answer,
-                'sources': self._format_sources(self._last_retrieved_docs),
+                'sources': self._format_sources(retrieved_docs),
                 'search_mode': self.search_mode,
                 'elapsed_time': elapsed_time,
                 'usage': {
-                    'total_tokens': estimated_tokens,
-                    'prompt_tokens': 0,
-                    'completion_tokens': 0
+                    # TODO: LangChain callback으로 실제 토큰 추적 필요
+                    'total_tokens': None,
+                    'prompt_tokens': None,
+                    'completion_tokens': None
                 },
                 'routing': classification
             }
