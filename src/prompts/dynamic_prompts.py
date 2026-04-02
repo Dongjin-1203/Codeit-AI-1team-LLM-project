@@ -1,3 +1,4 @@
+# TODO: generator.py에 연결 필요 — PromptManager 미사용 상태
 class PromptManager:
     """질문 유형별 시스템 프롬프트 관리"""
     
