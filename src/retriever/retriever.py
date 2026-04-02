@@ -5,6 +5,8 @@ import time
 import os
 from rank_bm25 import BM25Okapi
 import numpy as np
+import torch
+from kiwipiepy import Kiwi
 from sentence_transformers import CrossEncoder
 
 from src.utils.config import RAGConfig
@@ -18,6 +20,7 @@ class RAGRetriever:
         self.vectorstore = None
         self.embeddings = None
 
+        self.kiwi = Kiwi()
         self._initialize_embeddings()
         self._create_vectorstore()
         self._initialize_bm25()
@@ -39,6 +42,12 @@ class RAGRetriever:
             collection_name=self.config.COLLECTION_NAME
         )
 
+    def _tokenize_korean(self, text: str) -> list:
+        """한국어 형태소 분석 기반 토큰화 (명사·동사·형용사만 추출)"""
+        INCLUDE_TAGS = {'NNG', 'NNP', 'VV', 'VA'}
+        return [token.form for token in self.kiwi.tokenize(text)
+                if token.tag in INCLUDE_TAGS]
+
     def _initialize_bm25(self):
         """BM25 인덱스 생성"""
         all_docs = self.vectorstore.get()
@@ -48,16 +57,18 @@ class RAGRetriever:
         self.doc_metadatas = all_docs['metadatas']
         
         self.content_to_id = {text: doc_id for text, doc_id in zip(self.doc_texts, self.doc_ids)}
-        
-        tokenized_docs = [doc.split() for doc in self.doc_texts]
+        self.id_to_idx = {doc_id: idx for idx, doc_id in enumerate(self.doc_ids)}
+
+        tokenized_docs = [self._tokenize_korean(doc) for doc in self.doc_texts]
         self.bm25 = BM25Okapi(tokenized_docs)
         
         print(f"✅ BM25 인덱스 생성 완료: {len(self.doc_texts)}개 문서")
 
     def _initialize_reranker(self):
         """Re-ranker 초기화"""
-        self.reranker = CrossEncoder('BAAI/bge-reranker-base')
-        print("✅ Re-ranker 초기화 완료 (bge-reranker-base)")
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.reranker = CrossEncoder('BAAI/bge-reranker-base', device=device)
+        print(f"✅ Re-ranker 초기화 완료 (bge-reranker-base, device={device})")
 
     @staticmethod
     def _min_max_normalize(scores):
@@ -126,7 +137,7 @@ class RAGRetriever:
             top_k = self.config.DEFAULT_TOP_K
         
         # 1. BM25 검색
-        tokenized_query = query.split()
+        tokenized_query = self._tokenize_korean(query)
         bm25_scores = self.bm25.get_scores(tokenized_query)
         bm25_normalized = self._min_max_normalize(bm25_scores)
         
@@ -165,7 +176,7 @@ class RAGRetriever:
         # 6. 결과 포맷팅
         formatted_results = []
         for doc_id in top_ids:
-            idx = self.doc_ids.index(doc_id)
+            idx = self.id_to_idx[doc_id]
             formatted_results.append({
                 'content': self.doc_texts[idx],
                 'metadata': self.doc_metadatas[idx],
